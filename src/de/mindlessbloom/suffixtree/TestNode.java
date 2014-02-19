@@ -7,6 +7,7 @@ public class TestNode {
 	private int zaehler;
 	private String name;
 	private HashMap<String,TestNode> kinder;
+	private boolean match = false;
 
 	public TestNode() {
 		super();
@@ -37,6 +38,14 @@ public class TestNode {
 
 	public void setKinder(HashMap<String, TestNode> kinder) {
 		this.kinder = kinder;
+	}
+
+	public boolean isMatch() {
+		return match;
+	}
+
+	public void setMatch(boolean match) {
+		this.match = match;
 	}
 
 	@Override

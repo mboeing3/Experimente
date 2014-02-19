@@ -1,7 +1,6 @@
 package de.mindlessbloom.suffixtree;
 
 import java.awt.Dimension;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,174 +11,301 @@ import java.util.TreeSet;
 import javax.swing.JFrame;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
+import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
-import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 
 public class StartJung {
 
-    public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 
-	String wortTrennerRegAusdruck = " "; // Worttrenner (reg. Ausdruck)
-	String satzStringSuffix = " $"; // Wird an jeden Satz angehangen, bevor
-					// die Worttrennung durchgefuehrt wird.
-	boolean graphikAusgabe = false;
-	int maxAnzahlSaetzeZuBearbeiten = 0; // (n <= 0) == unbegrenzt
-	// String dateiPfad =
-	// "/Users/marcel/Magister/schokolade-minikorpus-bereinigt.txt"; // Ein
-	// Satz pro Zeile, am besten ohne Zeichensetzung.
-	String dateiPfad = "/Users/marcel/Magister/oanc-komplett-zusammengelegt.txt";
+		String wortTrennerRegAusdruck = " "; // Worttrenner (reg. Ausdruck)
+		String satzStringSuffix = " $"; // Wird an jeden Satz angehangen, bevor
+		// die Worttrennung durchgefuehrt wird.
+		boolean graphikAusgabe = true;
+		int maxAnzahlSaetzeZuBearbeiten = 0; // (n <= 0) == unbegrenzt
+		// String dateiPfad =
+		// "/Users/marcel/Magisterarbeit/schokolade-minikorpus-bereinigt.txt.gz";
+		// // Ein
+		// Satz pro Zeile, am besten ohne Zeichensetzung.
+		String dateiPfad = "/Users/marcel/Magisterarbeit/oanc-komplett-zusammengelegt.txt.gz";
 
-	// Datei einlesen
-	System.out.println("Parse Eingabedatei " + dateiPfad);
-	List<String> satzListe = PreParser.parse(new File(dateiPfad));
+		// Datei einlesen
+		System.out.println("Parse Eingabedatei " + dateiPfad);
+		List<String> satzListe = PreParser.parse(dateiPfad);
 
-	ArrayList<String[]> tokenArrayListe = new ArrayList<String[]>();
+		ArrayList<String[]> tokenArrayListe = new ArrayList<String[]>();
 
-	Iterator<String> saetze = satzListe.iterator();
-	System.out.println("Explodiere " + satzListe.size() + " Saetze");
-	while (saetze.hasNext()) {
-	    String satz = saetze.next();
+		Iterator<String> saetze = satzListe.iterator();
+		System.out.println("Explodiere " + satzListe.size() + " Saetze");
+		while (saetze.hasNext()) {
+			String satz = saetze.next();
 
-	    tokenArrayListe.add(satz.concat(satzStringSuffix).split(
-		    wortTrennerRegAusdruck));
+			tokenArrayListe.add(satz.concat(satzStringSuffix).split(
+					wortTrennerRegAusdruck));
+		}
+
+		// Baumgraphen erstellen
+		DelegateForest<TestNode, TestEdge> graph_walk = new DelegateForest<TestNode, TestEdge>();
+		DelegateForest<TestNode, TestEdge> graph_run = new DelegateForest<TestNode, TestEdge>();
+		DelegateForest<TestNode, TestEdge> graph_car = new DelegateForest<TestNode, TestEdge>();
+
+		ArrayList<DelegateForest<TestNode, TestEdge>> graphen = new ArrayList<DelegateForest<TestNode, TestEdge>>();
+		graphen.add(graph_walk);
+		graphen.add(graph_run);
+		graphen.add(graph_car);
+
+		/*
+		 * String[] token1 = new String[] { "cat", "ate", "cheese", "$" };
+		 * String[] token2 = new String[] { "mouse", "ate", "cheese", "too", "$"
+		 * }; String[] token3 = new String[] { "cat", "ate", "mouse", "too", "$"
+		 * }; String[][] token = new String[][] { token1, token2, token3 };
+		 */
+
+		final TestNode wurzel_walk = new TestNode();
+		final TestNode wurzel_run = new TestNode();
+		final TestNode wurzel_car = new TestNode();
+
+		graph_walk.setRoot(wurzel_walk);
+		graph_run.setRoot(wurzel_run);
+		graph_car.setRoot(wurzel_car);
+
+		StartJung s = new StartJung();
+
+		WortFilter wf_walk = new WortFilter();
+		wf_walk.addWort("walking");
+		WortFilter wf_run = new WortFilter();
+		wf_run.addWort("running");
+		WortFilter wf_car = new WortFilter();
+		wf_car.addWort("car");
+
+		/*
+		 * // Alle Tokenarrays durchlaufen for (int j = 0; j < token.length;
+		 * j++) {
+		 * 
+		 * // Alle Token des aktuellen Tokenarrays durchlaufen for (int i = 0; i
+		 * < token[j].length; i++) { s.trieBuilder(Arrays.copyOfRange(token[j],
+		 * i, token[j].length), wurzel, graph); } }
+		 */
+
+		s.konstruiereSuffixBaum(tokenArrayListe, maxAnzahlSaetzeZuBearbeiten,
+				wf_walk, wurzel_walk, graph_walk);
+		s.konstruiereSuffixBaum(tokenArrayListe, maxAnzahlSaetzeZuBearbeiten,
+				wf_run, wurzel_run, graph_run);
+		// s.konstruiereSuffixBaum(tokenArrayListe,
+		// maxAnzahlSaetzeZuBearbeiten,wf_car, wurzel_car, graph_car);
+
+		TestNode kind_walk = wurzel_walk.getKinder().get("walking");
+		TestNode kind_run = wurzel_run.getKinder().get("running");
+		// TestNode kind_car = wurzel_car.getKinder().get("car");
+
+		// TODO: Nur Knoten mit zu definierender Mindestanzahl von Kindern
+		// ausgeben (graphisch).
+
+		// TODO: KnotenKomparator fuer alle(?) Knoten durchfuehren. Evtl. auch
+		// nur fuer solche, die irgendwie aehnlich sind (Kinderanzahl;
+		// Beruehrungen durch Saetze, ... )
+
+		KnotenKomparator3 kk = new KnotenKomparator3();
+
+		TestNode walk_run = kk.verschmelzeBaeume(kind_walk, kind_run);
+		walk_run.setMatch(true);
+		TestNode walk_run_treffer = s.entferneNichtTrefferKnoten(walk_run);
+		DelegateForest<TestNode, TestEdge> walk_run_treffer_graph = s
+				.addGraphEdges(walk_run_treffer, null);
+		graphen.clear();
+		graphen.add(walk_run_treffer_graph);
+
+		// Double vergleich_run_walk = kk.vergleiche(kind_run, kind_walk);
+		// Double vergleich_walk_run = kk.vergleiche(kind_walk, kind_run); //
+		// zur
+		// Pruefung
+		// Double vergleich_run_walk2 = kk.vergleiche(kind_run, kind_walk); //
+		// ...
+		// Double vergleich_car_walk = kk.vergleiche(kind_car, kind_walk);
+		// Double vergleich_car_run = kk.vergleiche(kind_car, kind_run);
+		// Double vergleich_walk_car = kk.vergleiche(kind_walk, kind_car);
+		// Double vergleich_run_car = kk.vergleiche(kind_run, kind_car);
+
+		// System.out.println("Vergleich run-walk:" + vergleich_run_walk);
+		// System.out.println("Vergleich walk-run:" + vergleich_walk_run);
+		// System.out.println("Vergleich run-walk 2:" + vergleich_run_walk2);
+		// System.out.println("Vergleich car-walk:" + vergleich_car_walk);
+		// System.out.println("Vergleich car-run:" + vergleich_car_run);
+		// System.out.println("Vergleich walk-car:" + vergleich_walk_car);
+		// System.out.println("Vergleich run-car:" + vergleich_run_car);
+
+		if (graphikAusgabe) {
+
+			Iterator<DelegateForest<TestNode, TestEdge>> graphenElemente = graphen
+					.iterator();
+			while (graphenElemente.hasNext()) {
+
+				DelegateForest<TestNode, TestEdge> graph = graphenElemente
+						.next();
+
+				// The Layout<V, E> is parameterized by the vertex and edge
+				// types
+				// Layout<TestNode, TestEdge> layout = new TreeLayout<TestNode,
+				// TestEdge>(graph, 50, 50);
+				Layout<TestNode, TestEdge> layout = new RadialTreeLayout<TestNode, TestEdge>(
+						graph, 50, 50);
+				// layout.setSize(new Dimension(700, 700)); // sets the initial
+				// size
+				// of the space
+				// The BasicVisualizationServer<V,E> is parameterized by the
+				// edge
+				// types
+				// BasicVisualizationServer<TestNode, TestEdge> vv = new
+				// BasicVisualizationServer<TestNode, TestEdge>(layout);
+				VisualizationViewer<TestNode, TestEdge> vv = new VisualizationViewer<TestNode, TestEdge>(
+						layout);
+				vv.setPreferredSize(new Dimension(800, 800)); // Sets the
+																// viewing
+				// area size
+				vv.getRenderContext().setVertexLabelTransformer(
+						new ToStringLabeller<TestNode>());
+				vv.getRenderContext().setEdgeLabelTransformer(
+						new ToStringLabeller<TestEdge>());
+				// Create a graph mouse and add it to the visualization
+				// component
+				DefaultModalGraphMouse<TestNode, TestEdge> gm = new DefaultModalGraphMouse<TestNode, TestEdge>();
+				gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+				vv.setGraphMouse(gm);
+				JFrame frame = new JFrame("Simple Graph View");
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.getContentPane().add(vv);
+				frame.pack();
+				frame.setVisible(true);
+			}
+
+		}
+
 	}
 
-	// Baumgraphen erstellen
-	DelegateForest<TestNode, TestEdge> graph = new DelegateForest<TestNode, TestEdge>();
-
-	/*
-	 * String[] token1 = new String[] { "cat", "ate", "cheese", "$" };
-	 * String[] token2 = new String[] { "mouse", "ate", "cheese", "too", "$"
-	 * }; String[] token3 = new String[] { "cat", "ate", "mouse", "too", "$"
-	 * }; String[][] token = new String[][] { token1, token2, token3 };
-	 */
-
-	final TestNode wurzel = new TestNode();
-	graph.setRoot(wurzel);
-
-	StartJung s = new StartJung();
-
-	WortFilter wf = new WortFilter();
-	wf.addWort("walk");
-	wf.addWort("run");
-	wf.addWort("car");
-
-	/*
-	 * // Alle Tokenarrays durchlaufen for (int j = 0; j < token.length;
-	 * j++) {
+	/**
+	 * Gibt einen neuen Baum zurueck ohne die Knoten, die nicht als Treffer
+	 * markiert waren.
 	 * 
-	 * // Alle Token des aktuellen Tokenarrays durchlaufen for (int i = 0; i
-	 * < token[j].length; i++) { s.trieBuilder(Arrays.copyOfRange(token[j],
-	 * i, token[j].length), wurzel, graph); } }
+	 * @param knoten
+	 * @return
 	 */
+	public TestNode entferneNichtTrefferKnoten(TestNode knoten) {
 
-	// Saetze durchlaufen
-	for (int j = 0; j < tokenArrayListe.size()
-		&& (j < maxAnzahlSaetzeZuBearbeiten || maxAnzahlSaetzeZuBearbeiten <= 0); j++) {
+		if (knoten == null || !knoten.isMatch()) {
+			return null;
+		}
 
-	    if (!wf.hatWort(tokenArrayListe.get(j))) {
-		System.out.println("Ueberspringe Satz " + (j + 1) + " von "
-			+ tokenArrayListe.size() + ", Wort # ");
-		continue;
-	    }
-	    System.out.print("Bearbeite Satz " + (j + 1) + " von "
-		    + tokenArrayListe.size() + ", Wort # ");
+		TestNode neuerKnoten = new TestNode();
+		neuerKnoten.setName(knoten.getName());
+		neuerKnoten.setZaehler(knoten.getZaehler());
+		neuerKnoten.setMatch(true);
 
-	    // Alle Token des aktuellen Satzes durchlaufen
-	    for (int i = 0; i < tokenArrayListe.get(j).length; i++) {
+		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			String kindName = kinder.next();
+			TestNode kind = entferneNichtTrefferKnoten(knoten.getKinder().get(
+					kindName));
+			if (kind != null)
+				neuerKnoten.getKinder().put(kindName, kind);
+		}
 
-		System.out.print(i + " ");
+		return neuerKnoten;
 
-		// Suffix-Tree bauen
-		BaumBauer b = new BaumBauer();
-		b.baumBuilder(Arrays.copyOfRange(tokenArrayListe.get(j), i,
-			tokenArrayListe.get(j).length), wurzel, graph, false);
-	    }
-	    System.out.println("fertig.");
 	}
 
-	// TODO: Knoten nach Kinderanzahl geordnet auflisten.
-	TreeSet<TestNode> nodesGeordnet = new TreeSet<TestNode>(
-		new NodeDurchlaufZaehlerComparator());
-	// s.fuegeNodesInTreeSetEin(wurzel, nodesGeordnet); // Brauche nur die
-	// Kinder der ersten Ebene
-	Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
-	while (kinder.hasNext()) {
-	    nodesGeordnet.add(wurzel.getKinder().get(kinder.next()));
+	public void fuegeNodesInTreeSetEin(TestNode wurzel,
+			TreeSet<TestNode> treeSet) {
+		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			fuegeNodesInTreeSetEin(wurzel.getKinder().get(kinder.next()),
+					treeSet);
+		}
+		treeSet.add(wurzel);
 	}
 
-	Iterator<TestNode> nodes = nodesGeordnet.iterator();
-	while (nodes.hasNext()) {
-	    TestNode node = nodes.next();
-	    System.out.println(node.getName()
-		    + "\t Beruehrungen durch Saetze :" + node.getZaehler()
-		    + "\t Kinder:" + node.getKinder().size());
-	}
-	// TODO: Nur Knoten mit zu definierender Mindestanzahl von Kindern
-	// ausgeben (graphisch).
+	/**
+	 * Gibt einen Graphen mit dem uebergebenen Baum zurueck
+	 * 
+	 * @param knoten
+	 * @param graph
+	 * @return
+	 */
+	public DelegateForest<TestNode, TestEdge> addGraphEdges(TestNode knoten,
+			DelegateForest<TestNode, TestEdge> graph) {
+		
+		System.out.println("addGraphEdges:"+knoten.getName());
 
-	// TODO: KnotenKomparator fuer alle(?) Knoten durchfuehren. Evtl. auch nur fuer solche, die irgendwie aehnlich sind (Kinderanzahl; Beruehrungen durch Saetze, ... )
+		if (graph == null) {
+			graph = new DelegateForest<TestNode, TestEdge>();
+			graph.setRoot(knoten);
+		}
 
-	KnotenKomparator kk = new KnotenKomparator();
-	
-	int vergleich_run_walk = kk.vergleiche(wurzel.getKinder().get("run"), wurzel.getKinder().get("walk"));
-	int vergleich_walk_run = kk.vergleiche(wurzel.getKinder().get("walk"), wurzel.getKinder().get("run")); // zur Pruefung
-	int vergleich_run_walk2 = kk.vergleiche(wurzel.getKinder().get("run"), wurzel.getKinder().get("walk")); // ...
-	int vergleich_car_walk = kk.vergleiche(wurzel.getKinder().get("car"), wurzel.getKinder().get("walk"));
-	int vergleich_car_run = kk.vergleiche(wurzel.getKinder().get("car"), wurzel.getKinder().get("run"));
-	int vergleich_walk_car = kk.vergleiche(wurzel.getKinder().get("walk"), wurzel.getKinder().get("car"));
-	int vergleich_run_car = kk.vergleiche(wurzel.getKinder().get("run"), wurzel.getKinder().get("car"));
-	
-	System.out.println("Vergleich run-walk:"+vergleich_run_walk);
-	System.out.println("Vergleich walk-run:"+vergleich_walk_run);
-	System.out.println("Vergleich run-walk 2:"+vergleich_run_walk2);
-	System.out.println("Vergleich car-walk:"+vergleich_car_walk);
-	System.out.println("Vergleich car-run:"+vergleich_car_run);
-	System.out.println("Vergleich walk-car:"+vergleich_walk_car);
-	System.out.println("Vergleich run-car:"+vergleich_run_car);
-	
-	if (graphikAusgabe) {
-	    // The Layout<V, E> is parameterized by the vertex and edge types
-	    Layout<TestNode, TestEdge> layout = new TreeLayout<TestNode, TestEdge>(graph, 50, 50);
-	    // layout.setSize(new Dimension(700, 700)); // sets the initial size
-	    // of the space
-	    // The BasicVisualizationServer<V,E> is parameterized by the edge
-	    // types
-	    BasicVisualizationServer<TestNode, TestEdge> vv = new BasicVisualizationServer<TestNode, TestEdge>(
-		    layout);
-	    vv.setPreferredSize(new Dimension(800, 800)); // Sets the viewing
-							  // area size
-	    vv.getRenderContext().setVertexLabelTransformer(
-		    new ToStringLabeller<TestNode>());
-	    vv.getRenderContext().setEdgeLabelTransformer(
-		    new ToStringLabeller<TestEdge>());
-	    JFrame frame = new JFrame("Simple Graph View");
-	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    frame.getContentPane().add(vv);
-	    frame.pack();
-	    frame.setVisible(true);
+		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			TestNode kind = knoten.getKinder().get(kinder.next());
+			System.out.println("addGraphEdges:"+knoten.getName()+" --> "+kind.getName());
+			TestEdge neueKante = new TestEdge(kind.getName().intern());
+			graph.addEdge(neueKante, knoten, kind, EdgeType.DIRECTED);
+			addGraphEdges(kind, graph);
+		}
+
+		return graph;
 	}
 
-    }
+	public void konstruiereSuffixBaum(ArrayList<String[]> tokenArrayListe,
+			int maxAnzahlSaetzeZuBearbeiten, WortFilter wf, TestNode wurzel,
+			DelegateForest<TestNode, TestEdge> graph) {
+		// Saetze durchlaufen
+		for (int j = 0; j < tokenArrayListe.size()
+				&& (j < maxAnzahlSaetzeZuBearbeiten || maxAnzahlSaetzeZuBearbeiten <= 0); j++) {
 
-    public void fuegeNodesInTreeSetEin(TestNode wurzel,
-	    TreeSet<TestNode> treeSet) {
-	Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
-	while (kinder.hasNext()) {
-	    fuegeNodesInTreeSetEin(wurzel.getKinder().get(kinder.next()),
-		    treeSet);
+			if (!wf.hatWort(tokenArrayListe.get(j))) {
+				// System.out.println("Ueberspringe Satz " + (j + 1) + " von "+
+				// tokenArrayListe.size() + ", Wort # ");
+				continue;
+			}
+			System.out.print("Bearbeite Satz " + (j + 1) + " von "
+					+ tokenArrayListe.size() + ": ");
+
+			// Alle Token des aktuellen Satzes durchlaufen
+			for (int i = 0; i < tokenArrayListe.get(j).length; i++) {
+
+				System.out.print(tokenArrayListe.get(j)[i] + " ");
+
+				// Suffix-Tree bauen
+				BaumBauer b = new BaumBauer();
+				b.baumBuilder(Arrays.copyOfRange(tokenArrayListe.get(j), i,
+						tokenArrayListe.get(j).length), wurzel, graph, false);
+			}
+			System.out.println("fertig.");
+		}
+
+		// TODO: Knoten nach Kinderanzahl geordnet auflisten.
+		TreeSet<TestNode> nodesGeordnet = new TreeSet<TestNode>(
+				new NodeDurchlaufZaehlerComparator());
+		// s.fuegeNodesInTreeSetEin(wurzel, nodesGeordnet); // Brauche nur die
+		// Kinder der ersten Ebene
+		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			nodesGeordnet.add(wurzel.getKinder().get(kinder.next()));
+		}
+
+		Iterator<TestNode> nodes = nodesGeordnet.iterator();
+		while (nodes.hasNext()) {
+			TestNode node = nodes.next();
+			System.out.println(node.getName()
+					+ "\t Beruehrungen durch Saetze :" + node.getZaehler()
+					+ "\t Kinder:" + node.getKinder().size());
+		}
 	}
-	treeSet.add(wurzel);
-    }
 
-
-
-    /*
-     * $ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$
-     * abbabbab$ 12345678
-     */
+	/*
+	 * $ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$
+	 * abbabbab$ 12345678
+	 */
 }

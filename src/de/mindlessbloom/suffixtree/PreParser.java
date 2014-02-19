@@ -1,19 +1,20 @@
 package de.mindlessbloom.suffixtree;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 public class PreParser {
 	
 	public static final String ZEICHENSATZENDEREGEX = "(?<=\\.)";
 	public static final String WORTTRENNER = " ";
 	
-	public static List<String> parse(File f) throws IOException{
+	public static List<String> parse(String filename) throws IOException{
 		ArrayList<String> ergebnisListe = new ArrayList<String>();
 		
 		/*
@@ -21,8 +22,11 @@ public class PreParser {
 		 */
 		BufferedReader b = null;
 		try {
+			
 			b = new BufferedReader(
-					new FileReader(f));
+					new InputStreamReader(
+					new GZIPInputStream(
+					new FileInputStream( filename ) ) ) );
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
