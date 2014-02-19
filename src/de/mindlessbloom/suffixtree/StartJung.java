@@ -1,6 +1,11 @@
 package de.mindlessbloom.suffixtree;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +14,8 @@ import java.util.List;
 import java.util.TreeSet;
 
 import javax.swing.JFrame;
+
+import org.apache.commons.collections15.Transformer;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;
@@ -101,7 +108,7 @@ public class StartJung {
 
 		TestNode kind_walk = wurzel_walk.getKinder().get("walking");
 		TestNode kind_run = wurzel_run.getKinder().get("running");
-		// TestNode kind_car = wurzel_car.getKinder().get("car");
+		TestNode kind_car = wurzel_car.getKinder().get("car");
 
 		// TODO: Nur Knoten mit zu definierender Mindestanzahl von Kindern
 		// ausgeben (graphisch).
@@ -113,12 +120,21 @@ public class StartJung {
 		KnotenKomparator3 kk = new KnotenKomparator3();
 
 		TestNode walk_run = kk.verschmelzeBaeume(kind_walk, kind_run);
-		walk_run.setMatch(true);
-		TestNode walk_run_treffer = s.entferneNichtTrefferKnoten(walk_run);
+		
+		int[] trefferwert0 = kk.ermittleKnotenTrefferwert(walk_run);
+		System.out.println("Treffer0 walk_run_treffer:"+trefferwert0[0]+":"+trefferwert0[1]);
+		
+		TestNode walk_run_treffer = s.entferneNichtTrefferKnoten(walk_run,true);
+		
+		int[] trefferwert2 = kk.ermittleKnotenTrefferwert(walk_run_treffer);
+		System.out.println("Treffer2 walk_run_treffer:"+trefferwert2[0]+":"+trefferwert2[1]);
+		
 		DelegateForest<TestNode, TestEdge> walk_run_treffer_graph = s
 				.addGraphEdges(walk_run_treffer, null);
 		graphen.clear();
 		graphen.add(walk_run_treffer_graph);
+		
+		
 
 		// Double vergleich_run_walk = kk.vergleiche(kind_run, kind_walk);
 		// Double vergleich_walk_run = kk.vergleiche(kind_walk, kind_run); //
@@ -171,6 +187,25 @@ public class StartJung {
 						new ToStringLabeller<TestNode>());
 				vv.getRenderContext().setEdgeLabelTransformer(
 						new ToStringLabeller<TestEdge>());
+				
+				
+				// Transformer maps the vertex number to a vertex property
+		        Transformer<TestNode,Paint> vertexColor = new Transformer<TestNode,Paint>() {
+		            public Paint transform(TestNode arg0) {
+		                if(arg0.isMatch()) return Color.GREEN;
+		                return Color.RED;
+		            }
+		        };
+		        Transformer<TestNode,Shape> vertexSize = new Transformer<TestNode,Shape>(){
+		            public Shape transform(TestNode arg0){
+		                Ellipse2D circle = new Ellipse2D.Double(-15, -15, 30, 30);
+		                // in this case, the vertex is twice as large
+		                return AffineTransform.getScaleInstance(Math.log((double)arg0.getZaehler()+2d)/4d, Math.log((double)arg0.getZaehler()+2d)/4d).createTransformedShape(circle);
+		            }
+		        };
+		        vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+		        vv.getRenderContext().setVertexShapeTransformer(vertexSize);
+				
 				// Create a graph mouse and add it to the visualization
 				// component
 				DefaultModalGraphMouse<TestNode, TestEdge> gm = new DefaultModalGraphMouse<TestNode, TestEdge>();
@@ -194,9 +229,9 @@ public class StartJung {
 	 * @param knoten
 	 * @return
 	 */
-	public TestNode entferneNichtTrefferKnoten(TestNode knoten) {
+	public TestNode entferneNichtTrefferKnoten(TestNode knoten, boolean ignoriereErstenKnoten) {
 
-		if (knoten == null || !knoten.isMatch()) {
+		if (knoten == null || !(knoten.isMatch() || ignoriereErstenKnoten)) {
 			return null;
 		}
 
@@ -209,7 +244,7 @@ public class StartJung {
 		while (kinder.hasNext()) {
 			String kindName = kinder.next();
 			TestNode kind = entferneNichtTrefferKnoten(knoten.getKinder().get(
-					kindName));
+					kindName),false);
 			if (kind != null)
 				neuerKnoten.getKinder().put(kindName, kind);
 		}

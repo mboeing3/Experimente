@@ -50,7 +50,6 @@ public class TestNode {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return this.zaehler+":"+this.kinder.size();
+		return this.zaehler+""; //+":"+this.kinder.size();
 	}
 }
