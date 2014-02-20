@@ -57,11 +57,11 @@ public class StartJung {
 		}
 
 		// Baumgraphen erstellen
-		DelegateForest<TestNode, TestEdge> graph_walk = new DelegateForest<TestNode, TestEdge>();
-		DelegateForest<TestNode, TestEdge> graph_run = new DelegateForest<TestNode, TestEdge>();
-		DelegateForest<TestNode, TestEdge> graph_car = new DelegateForest<TestNode, TestEdge>();
+		DelegateForest<Knoten, Kante> graph_walk = new DelegateForest<Knoten, Kante>();
+		DelegateForest<Knoten, Kante> graph_run = new DelegateForest<Knoten, Kante>();
+		DelegateForest<Knoten, Kante> graph_car = new DelegateForest<Knoten, Kante>();
 
-		ArrayList<DelegateForest<TestNode, TestEdge>> graphen = new ArrayList<DelegateForest<TestNode, TestEdge>>();
+		ArrayList<DelegateForest<Knoten, Kante>> graphen = new ArrayList<DelegateForest<Knoten, Kante>>();
 		graphen.add(graph_walk);
 		graphen.add(graph_run);
 		graphen.add(graph_car);
@@ -73,9 +73,9 @@ public class StartJung {
 		 * }; String[][] token = new String[][] { token1, token2, token3 };
 		 */
 
-		final TestNode wurzel_walk = new TestNode();
-		final TestNode wurzel_run = new TestNode();
-		final TestNode wurzel_car = new TestNode();
+		final Knoten wurzel_walk = new Knoten();
+		final Knoten wurzel_run = new Knoten();
+		final Knoten wurzel_car = new Knoten();
 
 		graph_walk.setRoot(wurzel_walk);
 		graph_run.setRoot(wurzel_run);
@@ -88,7 +88,7 @@ public class StartJung {
 		WortFilter wf_run = new WortFilter();
 		wf_run.addWort("running");
 		WortFilter wf_car = new WortFilter();
-		wf_car.addWort("car");
+		wf_car.addWort("baking");
 
 		/*
 		 * // Alle Tokenarrays durchlaufen for (int j = 0; j < token.length;
@@ -106,9 +106,9 @@ public class StartJung {
 		// s.konstruiereSuffixBaum(tokenArrayListe,
 		// maxAnzahlSaetzeZuBearbeiten,wf_car, wurzel_car, graph_car);
 
-		TestNode kind_walk = wurzel_walk.getKinder().get("walking");
-		TestNode kind_run = wurzel_run.getKinder().get("running");
-		TestNode kind_car = wurzel_car.getKinder().get("car");
+		Knoten kind_walk = wurzel_walk.getKinder().get("walking");
+		Knoten kind_run = wurzel_run.getKinder().get("running");
+		Knoten kind_car = wurzel_car.getKinder().get("baking");
 
 		// TODO: Nur Knoten mit zu definierender Mindestanzahl von Kindern
 		// ausgeben (graphisch).
@@ -117,22 +117,31 @@ public class StartJung {
 		// nur fuer solche, die irgendwie aehnlich sind (Kinderanzahl;
 		// Beruehrungen durch Saetze, ... )
 
-		KnotenKomparator3 kk = new KnotenKomparator3();
+		de.mindlessbloom.suffixtree.experiment05.KnotenKomparator kk = new de.mindlessbloom.suffixtree.experiment05.KnotenKomparator(3,2d,-2d);
 
-		TestNode walk_run = kk.verschmelzeBaeume(kind_walk, kind_run);
+		Knoten walk_run = kk.verschmelzeBaeume(kind_walk, kind_run);
 		
-		int[] trefferwert0 = kk.ermittleKnotenTrefferwert(walk_run);
-		System.out.println("Treffer0 walk_run_treffer:"+trefferwert0[0]+":"+trefferwert0[1]);
+		Knoten walk_run_car = kk.verschmelzeBaeume(walk_run, kind_car);
 		
-		TestNode walk_run_treffer = s.entferneNichtTrefferKnoten(walk_run,true);
+		double[] trefferwert0 = kk.ermittleKnotenTrefferwert(walk_run);
+		System.out.println("Treffer0 walk_run:"+trefferwert0[0]+":"+trefferwert0[1]);
 		
-		int[] trefferwert2 = kk.ermittleKnotenTrefferwert(walk_run_treffer);
+		double[] trefferwert1 = kk.ermittleKnotenTrefferwert(walk_run_car);
+		System.out.println("Treffer1 walk_run_car:"+trefferwert1[0]+":"+trefferwert1[1]);
+		
+		Knoten walk_run_treffer = s.entferneNichtTrefferKnoten(walk_run,true);
+		Knoten walk_run_car_treffer = s.entferneNichtTrefferKnoten(walk_run_car,true);
+		
+		double[] trefferwert2 = kk.ermittleKnotenTrefferwert(walk_run_treffer);
 		System.out.println("Treffer2 walk_run_treffer:"+trefferwert2[0]+":"+trefferwert2[1]);
 		
-		DelegateForest<TestNode, TestEdge> walk_run_treffer_graph = s
-				.addGraphEdges(walk_run_treffer, null);
+		double[] trefferwert3 = kk.ermittleKnotenTrefferwert(walk_run_car_treffer);
+		System.out.println("Treffer1 walk_run_car_treffer:"+trefferwert3[0]+":"+trefferwert3[1]);
+		
+		DelegateForest<Knoten, Kante> walk_run_treffer_graph = s
+				.addGraphEdges(walk_run_car, null);
 		graphen.clear();
-		graphen.add(walk_run_treffer_graph);
+		//graphen.add(walk_run_treffer_graph);
 		
 		
 
@@ -157,18 +166,18 @@ public class StartJung {
 
 		if (graphikAusgabe) {
 
-			Iterator<DelegateForest<TestNode, TestEdge>> graphenElemente = graphen
+			Iterator<DelegateForest<Knoten, Kante>> graphenElemente = graphen
 					.iterator();
 			while (graphenElemente.hasNext()) {
 
-				DelegateForest<TestNode, TestEdge> graph = graphenElemente
+				DelegateForest<Knoten, Kante> graph = graphenElemente
 						.next();
 
 				// The Layout<V, E> is parameterized by the vertex and edge
 				// types
 				// Layout<TestNode, TestEdge> layout = new TreeLayout<TestNode,
 				// TestEdge>(graph, 50, 50);
-				Layout<TestNode, TestEdge> layout = new RadialTreeLayout<TestNode, TestEdge>(
+				Layout<Knoten, Kante> layout = new RadialTreeLayout<Knoten, Kante>(
 						graph, 50, 50);
 				// layout.setSize(new Dimension(700, 700)); // sets the initial
 				// size
@@ -178,26 +187,26 @@ public class StartJung {
 				// types
 				// BasicVisualizationServer<TestNode, TestEdge> vv = new
 				// BasicVisualizationServer<TestNode, TestEdge>(layout);
-				VisualizationViewer<TestNode, TestEdge> vv = new VisualizationViewer<TestNode, TestEdge>(
+				VisualizationViewer<Knoten, Kante> vv = new VisualizationViewer<Knoten, Kante>(
 						layout);
 				vv.setPreferredSize(new Dimension(800, 800)); // Sets the
 																// viewing
 				// area size
 				vv.getRenderContext().setVertexLabelTransformer(
-						new ToStringLabeller<TestNode>());
+						new ToStringLabeller<Knoten>());
 				vv.getRenderContext().setEdgeLabelTransformer(
-						new ToStringLabeller<TestEdge>());
+						new ToStringLabeller<Kante>());
 				
 				
 				// Transformer maps the vertex number to a vertex property
-		        Transformer<TestNode,Paint> vertexColor = new Transformer<TestNode,Paint>() {
-		            public Paint transform(TestNode arg0) {
+		        Transformer<Knoten,Paint> vertexColor = new Transformer<Knoten,Paint>() {
+		            public Paint transform(Knoten arg0) {
 		                if(arg0.isMatch()) return Color.GREEN;
 		                return Color.RED;
 		            }
 		        };
-		        Transformer<TestNode,Shape> vertexSize = new Transformer<TestNode,Shape>(){
-		            public Shape transform(TestNode arg0){
+		        Transformer<Knoten,Shape> vertexSize = new Transformer<Knoten,Shape>(){
+		            public Shape transform(Knoten arg0){
 		                Ellipse2D circle = new Ellipse2D.Double(-15, -15, 30, 30);
 		                // in this case, the vertex is twice as large
 		                return AffineTransform.getScaleInstance(Math.log((double)arg0.getZaehler()+2d)/4d, Math.log((double)arg0.getZaehler()+2d)/4d).createTransformedShape(circle);
@@ -208,7 +217,7 @@ public class StartJung {
 				
 				// Create a graph mouse and add it to the visualization
 				// component
-				DefaultModalGraphMouse<TestNode, TestEdge> gm = new DefaultModalGraphMouse<TestNode, TestEdge>();
+				DefaultModalGraphMouse<Knoten, Kante> gm = new DefaultModalGraphMouse<Knoten, Kante>();
 				gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 				vv.setGraphMouse(gm);
 				JFrame frame = new JFrame("Simple Graph View");
@@ -229,13 +238,13 @@ public class StartJung {
 	 * @param knoten
 	 * @return
 	 */
-	public TestNode entferneNichtTrefferKnoten(TestNode knoten, boolean ignoriereErstenKnoten) {
+	public Knoten entferneNichtTrefferKnoten(Knoten knoten, boolean ignoriereErstenKnoten) {
 
 		if (knoten == null || !(knoten.isMatch() || ignoriereErstenKnoten)) {
 			return null;
 		}
 
-		TestNode neuerKnoten = new TestNode();
+		Knoten neuerKnoten = new Knoten();
 		neuerKnoten.setName(knoten.getName());
 		neuerKnoten.setZaehler(knoten.getZaehler());
 		neuerKnoten.setMatch(true);
@@ -243,7 +252,7 @@ public class StartJung {
 		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
 		while (kinder.hasNext()) {
 			String kindName = kinder.next();
-			TestNode kind = entferneNichtTrefferKnoten(knoten.getKinder().get(
+			Knoten kind = entferneNichtTrefferKnoten(knoten.getKinder().get(
 					kindName),false);
 			if (kind != null)
 				neuerKnoten.getKinder().put(kindName, kind);
@@ -253,8 +262,8 @@ public class StartJung {
 
 	}
 
-	public void fuegeNodesInTreeSetEin(TestNode wurzel,
-			TreeSet<TestNode> treeSet) {
+	public void fuegeNodesInTreeSetEin(Knoten wurzel,
+			TreeSet<Knoten> treeSet) {
 		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
 		while (kinder.hasNext()) {
 			fuegeNodesInTreeSetEin(wurzel.getKinder().get(kinder.next()),
@@ -270,21 +279,18 @@ public class StartJung {
 	 * @param graph
 	 * @return
 	 */
-	public DelegateForest<TestNode, TestEdge> addGraphEdges(TestNode knoten,
-			DelegateForest<TestNode, TestEdge> graph) {
-		
-		System.out.println("addGraphEdges:"+knoten.getName());
+	public DelegateForest<Knoten, Kante> addGraphEdges(Knoten knoten,
+			DelegateForest<Knoten, Kante> graph) {
 
 		if (graph == null) {
-			graph = new DelegateForest<TestNode, TestEdge>();
+			graph = new DelegateForest<Knoten, Kante>();
 			graph.setRoot(knoten);
 		}
 
 		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
 		while (kinder.hasNext()) {
-			TestNode kind = knoten.getKinder().get(kinder.next());
-			System.out.println("addGraphEdges:"+knoten.getName()+" --> "+kind.getName());
-			TestEdge neueKante = new TestEdge(kind.getName().intern());
+			Knoten kind = knoten.getKinder().get(kinder.next());
+			Kante neueKante = new Kante(kind.getName().intern());
 			graph.addEdge(neueKante, knoten, kind, EdgeType.DIRECTED);
 			addGraphEdges(kind, graph);
 		}
@@ -293,8 +299,8 @@ public class StartJung {
 	}
 
 	public void konstruiereSuffixBaum(ArrayList<String[]> tokenArrayListe,
-			int maxAnzahlSaetzeZuBearbeiten, WortFilter wf, TestNode wurzel,
-			DelegateForest<TestNode, TestEdge> graph) {
+			int maxAnzahlSaetzeZuBearbeiten, WortFilter wf, Knoten wurzel,
+			DelegateForest<Knoten, Kante> graph) {
 		// Saetze durchlaufen
 		for (int j = 0; j < tokenArrayListe.size()
 				&& (j < maxAnzahlSaetzeZuBearbeiten || maxAnzahlSaetzeZuBearbeiten <= 0); j++) {
@@ -320,9 +326,9 @@ public class StartJung {
 			System.out.println("fertig.");
 		}
 
-		// TODO: Knoten nach Kinderanzahl geordnet auflisten.
-		TreeSet<TestNode> nodesGeordnet = new TreeSet<TestNode>(
-				new NodeDurchlaufZaehlerComparator());
+		// TODO: Knoten nach Anzahl der Beruehrungen geordnet auflisten.
+		TreeSet<Knoten> nodesGeordnet = new TreeSet<Knoten>(
+				new KnotenDurchlaufZaehlerKomparator());
 		// s.fuegeNodesInTreeSetEin(wurzel, nodesGeordnet); // Brauche nur die
 		// Kinder der ersten Ebene
 		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
@@ -330,9 +336,9 @@ public class StartJung {
 			nodesGeordnet.add(wurzel.getKinder().get(kinder.next()));
 		}
 
-		Iterator<TestNode> nodes = nodesGeordnet.iterator();
+		Iterator<Knoten> nodes = nodesGeordnet.iterator();
 		while (nodes.hasNext()) {
-			TestNode node = nodes.next();
+			Knoten node = nodes.next();
 			System.out.println(node.getName()
 					+ "\t Beruehrungen durch Saetze :" + node.getZaehler()
 					+ "\t Kinder:" + node.getKinder().size());

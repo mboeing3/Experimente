@@ -11,12 +11,12 @@ public class KnotenKomparator3 {
 	
 	public static final String STELLVERTRETER = "######";
 	
-	public Double vergleiche(TestNode k1, TestNode k2){
+	public Double vergleiche(Knoten k1, Knoten k2){
 		
 		//TestNode angeglichenerBaum1 = ersetzeKnotenDurchStellvertreter(ersetzeKnotenDurchStellvertreter(k1,k2.getName()),k1.getName());
 		//TestNode angeglichenerBaum2 = ersetzeKnotenDurchStellvertreter(ersetzeKnotenDurchStellvertreter(k2,k1.getName()),k2.getName());
 		
-		TestNode verschmolzenerBaum = verschmelzeBaeume(k1, k2);
+		Knoten verschmolzenerBaum = verschmelzeBaeume(k1, k2);
 		int[] trefferWert = this.ermittleKnotenTrefferwert(verschmolzenerBaum);
 		System.out.println(trefferWert[0]+":"+trefferWert[1]);
 		return new Double((double)trefferWert[1]/(double)trefferWert[0]);
@@ -71,12 +71,12 @@ public class KnotenKomparator3 {
 	 * @param gleichZuSetzendeWoerter Array von Woertern, die nicht als unterschiedlich gewertet werden sollen. Diese werden im Ergebnisbaum mit dem Wert der Variable WORTPLATZHALTER eingefuegt.
 	 * @return Wurzelknoten des neuen Baumes
 	 */
-	public TestNode verschmelzeBaeume(TestNode knoten1, TestNode knoten2){
+	public Knoten verschmelzeBaeume(Knoten knoten1, Knoten knoten2){
 		
 		// Es wird angenommen, dass knotenTropfen == knotenMeer ist - nur die Kinder werden ueberprueft.
 		
 		// Neuen Knoten erzeugen
-		TestNode ergebnisKnoten = new TestNode();
+		Knoten ergebnisKnoten = new Knoten();
 		
 		// Ggf. Werte der uebergebenen Knoten aufaddieren und Kinder hinzufuegen
 		if (knoten1 != null){
@@ -88,7 +88,7 @@ public class KnotenKomparator3 {
 			while(k1Kinder.hasNext()){
 				
 				// Variable fuer neuen Kindknoten definieren
-				TestNode kindKnoten;
+				Knoten kindKnoten;
 				
 				// Name des Kindes von Knoten1 ermitteln
 				String k1KindName = k1Kinder.next();
@@ -128,7 +128,7 @@ public class KnotenKomparator3 {
 			while(k2Kinder.hasNext()){
 				
 				// Variable fuer neuen Kindknoten definieren
-				TestNode kindKnoten;
+				Knoten kindKnoten;
 				
 				// Name des Kindes von Knoten1 ermitteln
 				String k2KindName = k2Kinder.next();
@@ -166,7 +166,7 @@ public class KnotenKomparator3 {
 	 * @param knoten
 	 * @return Int-Array mit Trefferwert auf Index 0, Gesamtwert auf Index 1.
 	 */
-	public int[] ermittleKnotenTrefferwert(TestNode knoten){
+	public int[] ermittleKnotenTrefferwert(Knoten knoten){
 		int[] knotenMatches = new int[]{0,0};
 		
 		if (knoten.isMatch()){

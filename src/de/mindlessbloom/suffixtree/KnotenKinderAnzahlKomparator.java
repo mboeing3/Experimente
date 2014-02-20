@@ -2,10 +2,10 @@ package de.mindlessbloom.suffixtree;
 
 import java.util.Comparator;
 
-public class NodeKinderAnzahlComparator implements Comparator<TestNode> {
+public class KnotenKinderAnzahlKomparator implements Comparator<Knoten> {
 
 	@Override
-	public int compare(TestNode o1, TestNode o2) {
+	public int compare(Knoten o1, Knoten o2) {
 		int o1kinderanzahl = 0;
 		int o2kinderanzahl = 0;
 		if (o1.getKinder() != null){

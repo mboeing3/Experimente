@@ -2,17 +2,17 @@ package de.mindlessbloom.suffixtree;
 
 import java.util.HashMap;
 
-public class TestNode {
+public class Knoten {
 	
 	private int zaehler;
 	private String name;
-	private HashMap<String,TestNode> kinder;
+	private HashMap<String,Knoten> kinder;
 	private boolean match = false;
 
-	public TestNode() {
+	public Knoten() {
 		super();
 		this.zaehler = 1;
-		this.kinder = new HashMap<String,TestNode>();
+		this.kinder = new HashMap<String,Knoten>();
 		
 	}
 
@@ -32,11 +32,11 @@ public class TestNode {
 		this.name = name;
 	}
 
-	public HashMap<String, TestNode> getKinder() {
+	public HashMap<String, Knoten> getKinder() {
 		return kinder;
 	}
 
-	public void setKinder(HashMap<String, TestNode> kinder) {
+	public void setKinder(HashMap<String, Knoten> kinder) {
 		this.kinder = kinder;
 	}
 

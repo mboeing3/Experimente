@@ -7,16 +7,16 @@ import java.util.Iterator;
  * @author marcel
  *
  */
-public class KnotenKomparator {
+public class KnotenKomparator1 {
 	
-	public int vergleiche(TestNode knoten, TestNode vergleichsknoten){
+	public int vergleiche(Knoten knoten, Knoten vergleichsknoten){
 		
 		return fuegeKnotenInAnderenBaumEin(knoten, vergleichsknoten, true);
 		
 	}
 	
 	// TODO: Gibt unterschiedliche Werte aus fuer A - B und B - A . Pruefen!
-	private int fuegeKnotenInAnderenBaumEin(TestNode knotenTropfen, TestNode knotenMeer, boolean nurZaehlen){
+	private int fuegeKnotenInAnderenBaumEin(Knoten knotenTropfen, Knoten knotenMeer, boolean nurZaehlen){
 		int einfuegeOperationen = 0;
 		
 		// Es wird angenommen, dass knotenTropfen == knotenMeer ist - nur die Kinder werden ueberprueft.

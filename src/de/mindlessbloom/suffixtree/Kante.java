@@ -1,10 +1,10 @@
 package de.mindlessbloom.suffixtree;
 
-public class TestEdge {
+public class Kante {
 	
 	private String wort;
 
-	public TestEdge(String wort) {
+	public Kante(String wort) {
 		super();
 		this.wort = wort;
 	}

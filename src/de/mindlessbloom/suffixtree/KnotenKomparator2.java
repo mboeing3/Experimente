@@ -9,7 +9,7 @@ import java.util.Iterator;
  */
 public class KnotenKomparator2 {
 	
-	public Double vergleiche(TestNode tropfen, TestNode meer){
+	public Double vergleiche(Knoten tropfen, Knoten meer){
 		
 		fuegeKnotenInAnderenBaumEin(tropfen, meer, false);
 		int[] knotenMatches = this.zaehleKnotenMatches(meer);
@@ -19,7 +19,7 @@ public class KnotenKomparator2 {
 	}
 	
 	// TODO: Gibt unterschiedliche Werte aus fuer A - B und B - A . Pruefen!
-	private int fuegeKnotenInAnderenBaumEin(TestNode knotenTropfen, TestNode knotenMeer, boolean nurZaehlen){
+	private int fuegeKnotenInAnderenBaumEin(Knoten knotenTropfen, Knoten knotenMeer, boolean nurZaehlen){
 		int einfuegeOperationen = 0;
 		
 		// Es wird angenommen, dass knotenTropfen == knotenMeer ist - nur die Kinder werden ueberprueft.
@@ -57,7 +57,7 @@ public class KnotenKomparator2 {
 		return einfuegeOperationen;
 	}
 	
-	private int[] zaehleKnotenMatches(TestNode knoten){
+	private int[] zaehleKnotenMatches(Knoten knoten){
 		int[] knotenMatches = new int[]{0,0};
 		
 		// Kinder durchlaufen
