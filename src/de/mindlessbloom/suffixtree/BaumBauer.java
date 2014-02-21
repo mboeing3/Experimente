@@ -17,7 +17,7 @@ public class BaumBauer {
      * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
      * @return Die Anzahl der neu erstellten Knoten
      */
-    public int baumBuilder(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt) {
+    public int baueBaum(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt) {
 
     	// Variable zum Mitzaehlen der erstellten Knoten
 		int knotenerstellt = 0;
@@ -67,12 +67,12 @@ public class BaumBauer {
 		// Pruefen, ob der Baum "umgekehrt" erstellt werden soll
 		if (umgekehrt) {
 			// Rekursiver Aufruf mit Token 0 bis n-1
-			knotenerstellt += this.baumBuilder(
+			knotenerstellt += this.baueBaum(
 					Arrays.copyOfRange(token, 0, token.length - 1),
 					kindKnoten, graph, umgekehrt);
 		} else {
 			// Rekursiver Aufruf mit Token 1 bis n
-			knotenerstellt += this.baumBuilder(
+			knotenerstellt += this.baueBaum(
 					Arrays.copyOfRange(token, 1, token.length),
 					kindKnoten, graph, umgekehrt);
 		}
