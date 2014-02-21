@@ -15,6 +15,18 @@ import edu.uci.ics.jung.graph.util.EdgeType;
  */
 public class BaumBauer {
 	
+	/**
+     * Erzeugt einen Suffixbaum ab dem uebergebenen Knoten anhand der uebergebenen Token.
+     * Inkrementiert die Zaehlvariable eines jeden Knotens um eins fuer jede "Beruehrung".
+     * @param token String-Array mit Token (Woerter, Buchstaben, Symbole, ... egal was)
+     * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
+     * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
+     * @return Die Anzahl der neu erstellten Knoten
+     */
+	public int baueBaum(String[] token, Knoten rootnode, boolean umgekehrt) {
+		return this.baueBaum(token, rootnode, null, umgekehrt);
+	}
+	
     /**
      * Erzeugt einen Suffixbaum im uebergebenen Graphen ab dem uebergebenen
      * Knoten anhand der uebergebenen Token. Inkrementiert die Zaehlvariable
@@ -34,6 +46,7 @@ public class BaumBauer {
 			return knotenerstellt;
 		}
 
+		// Index des als naechstes zu vergleichenden Tokens ermitteln
 		int vergleichsTokenIndex = 0;
 		if (umgekehrt) {
 			vergleichsTokenIndex = token.length - 1;

@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.experiment04;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,6 +17,12 @@ import javax.swing.JFrame;
 
 import org.apache.commons.collections15.Transformer;
 
+import de.mindlessbloom.suffixtree.BaumBauer;
+import de.mindlessbloom.suffixtree.Kante;
+import de.mindlessbloom.suffixtree.Knoten;
+import de.mindlessbloom.suffixtree.KnotenDurchlaufZaehlerKomparator;
+import de.mindlessbloom.suffixtree.PreParser;
+import de.mindlessbloom.suffixtree.WortFilter;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
@@ -26,32 +32,49 @@ import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 
-public class StartJung {
+public class Start {
 
 	public static void main(String[] args) throws IOException {
 
-		String wortTrennerRegAusdruck = " "; // Worttrenner (reg. Ausdruck)
-		String satzStringSuffix = " $"; // Wird an jeden Satz angehangen, bevor
-		// die Worttrennung durchgefuehrt wird.
+		/**
+		 * Variablen definieren
+		 */
+		
+		// Worttrenner (reg. Ausdruck)
+		String wortTrennerRegAusdruck = " ";
+		
+		// Wird an jeden Satz des Korpus angehangen, bevor die Worttrennung durchgefuehrt wird.
+		String satzStringSuffix = " $";
+		
+		// Graphische Ausgabe des Graphen
 		boolean graphikAusgabe = true;
-		int maxAnzahlSaetzeZuBearbeiten = 0; // (n <= 0) == unbegrenzt
-		// String dateiPfad =
-		// "/Users/marcel/Magisterarbeit/schokolade-minikorpus-bereinigt.txt.gz";
-		// // Ein
-		// Satz pro Zeile, am besten ohne Zeichensetzung.
+		
+		// Maximal vom Korpus zu verarbeitende Saetze. (n <= 0) == unbegrenzt
+		int maxAnzahlSaetzeZuBearbeiten = 0;
+		
+		// Pfad zur komprimierten Korpusdatei.
 		String dateiPfad = "/Users/marcel/Magisterarbeit/oanc-komplett-zusammengelegt.txt.gz";
 
-		// Datei einlesen
+		/**
+		 * Korpus einlesen
+		 */
+		
+		// Datei einlesen und grundlegend parsen (Ausgabeformat: Satzliste).
 		System.out.println("Parse Eingabedatei " + dateiPfad);
 		List<String> satzListe = PreParser.parse(dateiPfad);
 
+		// Liste fuer TokenArrays (== Ketten von Einzelworten)
 		ArrayList<String[]> tokenArrayListe = new ArrayList<String[]>();
 
+		// Eingelesene Saetze durchlaufen
 		Iterator<String> saetze = satzListe.iterator();
 		System.out.println("Explodiere " + satzListe.size() + " Saetze");
 		while (saetze.hasNext()) {
+			
+			// Naechsten Satz ermitteln
 			String satz = saetze.next();
 
+			// Satz explodieren und Ergebnis zur TokenArray-Liste hinzufuegen 
 			tokenArrayListe.add(satz.concat(satzStringSuffix).split(
 					wortTrennerRegAusdruck));
 		}
@@ -66,13 +89,7 @@ public class StartJung {
 		graphen.add(graph_run);
 		graphen.add(graph_car);
 
-		/*
-		 * String[] token1 = new String[] { "cat", "ate", "cheese", "$" };
-		 * String[] token2 = new String[] { "mouse", "ate", "cheese", "too", "$"
-		 * }; String[] token3 = new String[] { "cat", "ate", "mouse", "too", "$"
-		 * }; String[][] token = new String[][] { token1, token2, token3 };
-		 */
-
+		// Wurzelknoten erstellen
 		final Knoten wurzel_walk = new Knoten();
 		final Knoten wurzel_run = new Knoten();
 		final Knoten wurzel_car = new Knoten();
@@ -81,7 +98,7 @@ public class StartJung {
 		graph_run.setRoot(wurzel_run);
 		graph_car.setRoot(wurzel_car);
 
-		StartJung s = new StartJung();
+		Start s = new Start();
 
 		WortFilter wf_walk = new WortFilter();
 		wf_walk.addWort("walking");
@@ -98,11 +115,14 @@ public class StartJung {
 		 * < token[j].length; i++) { s.trieBuilder(Arrays.copyOfRange(token[j],
 		 * i, token[j].length), wurzel, graph); } }
 		 */
+		
+		// BaumBauer erstellen
+		BaumBauer baumBauer = new BaumBauer();
 
 		s.konstruiereSuffixBaum(tokenArrayListe, maxAnzahlSaetzeZuBearbeiten,
-				wf_walk, wurzel_walk, graph_walk);
+				wf_walk, wurzel_walk, graph_walk, baumBauer);
 		s.konstruiereSuffixBaum(tokenArrayListe, maxAnzahlSaetzeZuBearbeiten,
-				wf_run, wurzel_run, graph_run);
+				wf_run, wurzel_run, graph_run, baumBauer);
 		// s.konstruiereSuffixBaum(tokenArrayListe,
 		// maxAnzahlSaetzeZuBearbeiten,wf_car, wurzel_car, graph_car);
 
@@ -129,8 +149,8 @@ public class StartJung {
 		double[] trefferwert1 = kk.ermittleKnotenTrefferwert(walk_run_car);
 		System.out.println("Treffer1 walk_run_car:"+trefferwert1[0]+":"+trefferwert1[1]);
 		
-		Knoten walk_run_treffer = s.entferneNichtTrefferKnoten(walk_run,true);
-		Knoten walk_run_car_treffer = s.entferneNichtTrefferKnoten(walk_run_car,true);
+		Knoten walk_run_treffer = baumBauer.entferneNichtTrefferKnoten(walk_run,true);
+		Knoten walk_run_car_treffer = baumBauer.entferneNichtTrefferKnoten(walk_run_car,true);
 		
 		double[] trefferwert2 = kk.ermittleKnotenTrefferwert(walk_run_treffer);
 		System.out.println("Treffer2 walk_run_treffer:"+trefferwert2[0]+":"+trefferwert2[1]);
@@ -138,8 +158,7 @@ public class StartJung {
 		double[] trefferwert3 = kk.ermittleKnotenTrefferwert(walk_run_car_treffer);
 		System.out.println("Treffer1 walk_run_car_treffer:"+trefferwert3[0]+":"+trefferwert3[1]);
 		
-		DelegateForest<Knoten, Kante> walk_run_treffer_graph = s
-				.addGraphEdges(walk_run_car, null);
+		DelegateForest<Knoten, Kante> walk_run_treffer_graph = baumBauer.konstruiereGraph(walk_run_car);
 		graphen.clear();
 		graphen.add(walk_run_treffer_graph);
 		
@@ -231,83 +250,14 @@ public class StartJung {
 
 	}
 
-	/**
-	 * Gibt einen neuen Baum zurueck ohne die Knoten, die nicht als Treffer
-	 * markiert waren.
-	 * 
-	 * @param knoten
-	 * @return
-	 */
-	public Knoten entferneNichtTrefferKnoten(Knoten knoten, boolean ignoriereErstenKnoten) {
-
-		if (knoten == null || !(knoten.isMatch() || ignoriereErstenKnoten)) {
-			return null;
-		}
-
-		Knoten neuerKnoten = new Knoten();
-		neuerKnoten.setName(knoten.getName());
-		neuerKnoten.setZaehler(knoten.getZaehler());
-		neuerKnoten.setMatch(true);
-
-		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
-		while (kinder.hasNext()) {
-			String kindName = kinder.next();
-			Knoten kind = entferneNichtTrefferKnoten(knoten.getKinder().get(
-					kindName),false);
-			if (kind != null)
-				neuerKnoten.getKinder().put(kindName, kind);
-		}
-
-		return neuerKnoten;
-
-	}
-
-	public void fuegeNodesInTreeSetEin(Knoten wurzel,
-			TreeSet<Knoten> treeSet) {
-		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
-		while (kinder.hasNext()) {
-			fuegeNodesInTreeSetEin(wurzel.getKinder().get(kinder.next()),
-					treeSet);
-		}
-		treeSet.add(wurzel);
-	}
-
-	/**
-	 * Gibt einen Graphen mit dem uebergebenen Baum zurueck
-	 * 
-	 * @param knoten
-	 * @param graph
-	 * @return
-	 */
-	public DelegateForest<Knoten, Kante> addGraphEdges(Knoten knoten,
-			DelegateForest<Knoten, Kante> graph) {
-
-		if (graph == null) {
-			graph = new DelegateForest<Knoten, Kante>();
-			graph.setRoot(knoten);
-		}
-
-		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
-		while (kinder.hasNext()) {
-			Knoten kind = knoten.getKinder().get(kinder.next());
-			Kante neueKante = new Kante(kind.getName().intern());
-			graph.addEdge(neueKante, knoten, kind, EdgeType.DIRECTED);
-			addGraphEdges(kind, graph);
-		}
-
-		return graph;
-	}
-
 	public void konstruiereSuffixBaum(ArrayList<String[]> tokenArrayListe,
 			int maxAnzahlSaetzeZuBearbeiten, WortFilter wf, Knoten wurzel,
-			DelegateForest<Knoten, Kante> graph) {
+			DelegateForest<Knoten, Kante> graph, BaumBauer baumBauer) {
 		// Saetze durchlaufen
 		for (int j = 0; j < tokenArrayListe.size()
 				&& (j < maxAnzahlSaetzeZuBearbeiten || maxAnzahlSaetzeZuBearbeiten <= 0); j++) {
 
 			if (!wf.hatWort(tokenArrayListe.get(j))) {
-				// System.out.println("Ueberspringe Satz " + (j + 1) + " von "+
-				// tokenArrayListe.size() + ", Wort # ");
 				continue;
 			}
 			System.out.print("Bearbeite Satz " + (j + 1) + " von "
@@ -319,8 +269,7 @@ public class StartJung {
 				System.out.print(tokenArrayListe.get(j)[i] + " ");
 
 				// Suffix-Tree bauen
-				BaumBauer b = new BaumBauer();
-				b.baueBaum(Arrays.copyOfRange(tokenArrayListe.get(j), i,
+				baumBauer.baueBaum(Arrays.copyOfRange(tokenArrayListe.get(j), i,
 						tokenArrayListe.get(j).length), wurzel, graph, false);
 			}
 			System.out.println("fertig.");
@@ -344,9 +293,4 @@ public class StartJung {
 					+ "\t Kinder:" + node.getKinder().size());
 		}
 	}
-
-	/*
-	 * $ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$ abbabbab$
-	 * abbabbab$ 12345678
-	 */
 }
