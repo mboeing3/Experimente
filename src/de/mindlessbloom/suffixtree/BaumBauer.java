@@ -1,10 +1,18 @@
 package de.mindlessbloom.suffixtree;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.TreeSet;
 
+import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 
+/**
+ * Stellt Methoden zum Konstruieren und Modifizieren von Suffixbaeumen zur Verfuegung.
+ * @author marcel
+ *
+ */
 public class BaumBauer {
 	
     /**
@@ -81,5 +89,92 @@ public class BaumBauer {
 		return knotenerstellt;
 
     }
+
+	/**
+	 * Gibt eine Kopie des uebergebenen Baumes zurueck, aber ohne die Knoten, die nicht als Treffer
+	 * markiert waren.
+	 * @param knoten Wurzelknoten des zu kopierenden Baumes
+	 * @param ignoriereErstenKnoten Gibt vor, ob der Wurzelknoten ignoriert werden soll (nuetzlich fuer Kontextvergleichsbaeume)
+	 * @return Wurzel des neu erstellten Baumes
+	 */
+	public Knoten entferneNichtTrefferKnoten(Knoten knoten, boolean ignoriereErstenKnoten) {
+
+		// Bearbeitung ggf. Abbrechen
+		if (knoten == null || !(knoten.isMatch() || ignoriereErstenKnoten)) {
+			return null;
+		}
+
+		// Neuen Knoten erstellen und Werte uebertragen
+		Knoten neuerKnoten = new Knoten();
+		neuerKnoten.setName(knoten.getName());
+		neuerKnoten.setZaehler(knoten.getZaehler());
+		neuerKnoten.setMatch(true);
+
+		// Aufruf fuer Kindknoten rekursiv wiederholen
+		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			String kindName = kinder.next();
+			Knoten kind = entferneNichtTrefferKnoten(knoten.getKinder().get(
+					kindName),false);
+			if (kind != null)
+				neuerKnoten.getKinder().put(kindName, kind);
+		}
+
+		// Neuen Knoten zurueckgeben
+		return neuerKnoten;
+
+	}
+
+	/**
+	 * Fuegt alle Elemente und Unterelemente des uebergebenen Baumes dem uebergebenen TreeSet hinzu. 
+	 * @param wurzel
+	 * @param treeSet
+	 */
+	public void fuegeNodesInTreeSetEin(Knoten wurzel, TreeSet<Knoten> treeSet) {
+		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			fuegeNodesInTreeSetEin(wurzel.getKinder().get(kinder.next()),
+					treeSet);
+		}
+		treeSet.add(wurzel);
+	}
+	
+	/**
+	 * Gibt einen Graphen mit dem uebergebenen Baum zurueck
+	 * 
+	 * @param knoten
+	 * @return
+	 */
+	public DelegateForest<Knoten, Kante> konstruiereGraph(Knoten knoten) {
+
+		return this.konstruiereGraph(knoten, null);
+		
+	}
+
+	/**
+	 * Gibt einen Graphen mit dem uebergebenen Baum zurueck
+	 * 
+	 * @param knoten
+	 * @param graph
+	 * @return
+	 */
+	private DelegateForest<Knoten, Kante> konstruiereGraph(Knoten knoten,
+			DelegateForest<Knoten, Kante> graph) {
+
+		if (graph == null) {
+			graph = new DelegateForest<Knoten, Kante>();
+			graph.setRoot(knoten);
+		}
+
+		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			Knoten kind = knoten.getKinder().get(kinder.next());
+			Kante neueKante = new Kante(kind.getName().intern());
+			graph.addEdge(neueKante, knoten, kind, EdgeType.DIRECTED);
+			konstruiereGraph(kind, graph);
+		}
+
+		return graph;
+	}
 
 }
