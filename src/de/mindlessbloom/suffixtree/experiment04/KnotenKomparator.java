@@ -44,61 +44,20 @@ public class KnotenKomparator {
 		this.ebenenexponent = ebenenexponent;
 	}
 
+	/**
+	 * Vergleicht die Baeume miteinander, deren Wurzelknoten uebergeben wurden.
+	 * @param k1 Wurzelknoten 1
+	 * @param k2 Wurzelknoten 2
+	 * @return Anteil des Trefferwerts am Gesamtwert
+	 */
 	public Double vergleiche(Knoten k1, Knoten k2) {
 
-		// TestNode angeglichenerBaum1 =
-		// ersetzeKnotenDurchStellvertreter(ersetzeKnotenDurchStellvertreter(k1,k2.getName()),k1.getName());
-		// TestNode angeglichenerBaum2 =
-		// ersetzeKnotenDurchStellvertreter(ersetzeKnotenDurchStellvertreter(k2,k1.getName()),k2.getName());
-
 		Knoten verschmolzenerBaum = verschmelzeBaeume(k1, k2);
-		double[] trefferWert = this.ermittleKnotenTrefferwert(verschmolzenerBaum, 3, 0d);
+		Double[] trefferWert = this.ermittleKnotenTrefferwert(verschmolzenerBaum, 3, 0d);
 		System.out.println(trefferWert[0] + ":" + trefferWert[1]);
-		return new Double((double) trefferWert[1] / (double) trefferWert[0]);
+		return new Double(trefferWert[0] / trefferWert[1]);
 
 	}
-
-	/**
-	 * Gibt Kopie des uebergebenen Baumes zurueck, in dem alle Vorkommen des
-	 * uebergebenen Knotennamen durch den Wert der statischen Variable
-	 * STELLVERTRETER ersetzt wurden.
-	 * 
-	 * @param knoten
-	 * @param knotenName
-	 * @return
-	 */
-	/*
-	 * public TestNode ersetzeKnotenDurchStellvertreter(TestNode knoten, String
-	 * knotenName){
-	 * 
-	 * // Neuen Knoten erstellen TestNode neuerKnoten = new TestNode();
-	 * 
-	 * // Werte uebernehmen neuerKnoten.setZaehler(knoten.getZaehler());
-	 * neuerKnoten.setMatch(knoten.isMatch());
-	 * 
-	 * // Namen pruefen und ggf. ersetzen if
-	 * (knoten.getName().equals(knotenName)){
-	 * neuerKnoten.setName(STELLVERTRETER); } else {
-	 * neuerKnoten.setName(knoten.getName()); }
-	 * 
-	 * // Kinder rekursiv aufrufen Iterator<String> kinder =
-	 * knoten.getKinder().keySet().iterator(); while(kinder.hasNext()){ TestNode
-	 * neuesKind =
-	 * ersetzeKnotenDurchStellvertreter(knoten.getKinder().get(kinder.next()),
-	 * knotenName);
-	 * 
-	 * // Ggf. Knoten verschmelzen (falls bereits Knoten mit Stellvertreternamen
-	 * vorhanden) if (neuesKind.getName().equals(STELLVERTRETER) &&
-	 * neuerKnoten.getKinder().containsKey(STELLVERTRETER)){ neuesKind =
-	 * verschmelzeBaeume(neuesKind,
-	 * neuerKnoten.getKinder().get(neuesKind.getName())); }
-	 * 
-	 * neuerKnoten.getKinder().put(neuesKind.getName(), neuesKind); }
-	 * 
-	 * // Neu erstellten Knoten zurueckgeben return neuerKnoten;
-	 * 
-	 * }
-	 */
 
 	/**
 	 * Verschmilzt die Baeume ab der ersten Kindebene des jeweils uebergebenen
@@ -227,7 +186,7 @@ public class KnotenKomparator {
 	 * @param knoten Der Knoten des Baumes, ab dem ausgewertet werden soll.
 	 * @return double-Array mit Trefferwert auf Index 0, Gesamtwert auf Index 1.
 	 */
-	public double[] ermittleKnotenTrefferwert(Knoten knoten) {
+	public Double[] ermittleKnotenTrefferwert(Knoten knoten) {
 		return this.ermittleKnotenTrefferwert(knoten, 0, this.maximaleAuswertungsEbene,
 				this.ebenenexponent);
 	}
@@ -241,7 +200,7 @@ public class KnotenKomparator {
 	 * @param ebenenexponent Exponent der Ebenennummer, welche Faktor fuer die Wertung von Knoten ist.
 	 * @return double-Array mit Trefferwert auf Index 0, Gesamtwert auf Index 1.
 	 */
-	public double[] ermittleKnotenTrefferwert(Knoten knoten, int maxebene,
+	public Double[] ermittleKnotenTrefferwert(Knoten knoten, int maxebene,
 			double ebenenexponentpositiv) {
 		return this.ermittleKnotenTrefferwert(knoten, 0, maxebene,
 				ebenenexponentpositiv);
@@ -262,9 +221,9 @@ public class KnotenKomparator {
 	 * @param ebenenexponent Exponent der Ebenennummer, welche Faktor fuer die Wertung von Knoten ist.
 	 * @return double-Array mit Trefferwert auf Index 0, Gesamtwert auf Index 1.
 	 */
-	private double[] ermittleKnotenTrefferwert(Knoten knoten, int ebene,
+	private Double[] ermittleKnotenTrefferwert(Knoten knoten, int ebene,
 			int maxebene, double ebenenexponent) {
-		double[] knotenMatches = new double[] { 0d, 0d };
+		Double[] knotenMatches = new Double[] { 0d, 0d };
 
 		if (ebene > 0){
 			if (knoten.isMatch()) {
@@ -281,7 +240,7 @@ public class KnotenKomparator {
 			Iterator<String> kinder = knoten.getKinder().keySet().iterator();
 			while (kinder.hasNext()) {
 				String kindName = kinder.next();
-				double[] kindKnotenMatches = ermittleKnotenTrefferwert(knoten
+				Double[] kindKnotenMatches = ermittleKnotenTrefferwert(knoten
 						.getKinder().get(kindName), ebene + 1, maxebene,
 						ebenenexponent);
 				knotenMatches[0] += kindKnotenMatches[0];
