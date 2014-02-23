@@ -17,6 +17,7 @@ import org.xml.sax.SAXException;
 
 public class OANCXMLParser {
 	
+	public static final String TERMINIERSYMBOL="$";
 	public static final String SATZGRENZENDATEISUFFIX="-s";
 	public static final String WORTTRENNERREGEX = "[\\ \\n\\t]+";
 	public static final String ZUENTFERNENDEZEICHENREGEX = "[\\.\\,\\;\\\"]*";
@@ -130,10 +131,11 @@ public class OANCXMLParser {
 	
 	/**
 	 * Bereinigt und segmentiert den uebergebenen Satz. Entfernt Zeilenumbrueche, Tabulatoren, Leerzeichen, Punktiuation.
+	 * Fuegt ggf. am Ende das Terminiersymbol ein.
 	 * @param rohsatz
 	 * @return Wortliste
 	 */
-	public List<String> bereinigeUndSegmentiereSatz(String rohsatz){
+	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeTerminierSymbolEin){
 		List<String> ergebnisListe = new ArrayList<String>();
 		
 		// Satz segmentieren
@@ -145,6 +147,11 @@ public class OANCXMLParser {
 			String segment = segmente[i].replaceAll(ZUENTFERNENDEZEICHENREGEX, "").trim();
 			if (!segment.isEmpty())
 				ergebnisListe.add(segment.intern());
+		}
+		
+		// Ggf. Terminiersymbol einfuegen
+		if (fuegeTerminierSymbolEin){
+			ergebnisListe.add(OANCXMLParser.TERMINIERSYMBOL);
 		}
 		
 		// Ergebnisliste zurueckgeben

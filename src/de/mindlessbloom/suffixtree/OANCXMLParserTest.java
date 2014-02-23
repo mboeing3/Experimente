@@ -47,10 +47,10 @@ public class OANCXMLParserTest {
 			p = new OANCXMLParser(new File("/Users/marcel/Downloads/OANC/data/written_1/fiction/eggan/TheStory.txt"));
 			
 			String rohsatz = " WortA WortB \n\t\t WortC, WortD,\nWortE  WortF.  ";
-			List<String> wortliste = p.bereinigeUndSegmentiereSatz(rohsatz);
+			List<String> wortliste = p.bereinigeUndSegmentiereSatz(rohsatz, true);
 			
 			System.out.println("Anzahl ermittelter Worte: "+wortliste.size());
-			assertTrue(wortliste.size()==6);
+			assertTrue(wortliste.size()==7);
 			
 			Iterator<String> worte = wortliste.iterator();
 			while(worte.hasNext()){

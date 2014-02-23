@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment04;
+package de.mindlessbloom.suffixtree.experiment01;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import de.mindlessbloom.suffixtree.MatrixPlotter;
 import de.mindlessbloom.suffixtree.OANC;
 import de.mindlessbloom.suffixtree.OANCXMLParser;
 import de.mindlessbloom.suffixtree.WortFilter;
-import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.DelegateTree;
 
 public class Start {
 
@@ -26,10 +26,10 @@ public class Start {
 		
 		// Zu vergleichende Worte festlegen
 		//String[] vergleichWorte = new String[]{"running","walking", "car"};
-		String[] vergleichWorte = new String[]{"running","walking"};
+		String[] vergleichWorte = new String[]{"running","walking","car"};
 		
 		// Graphische Ausgabe des Graphen
-		boolean graphikAusgabe = true;
+		boolean graphikAusgabe = false;
 		
 		// Vergleiche ggf. nur auf Notwendige reduzieren
 		boolean reduziereVergleicheAufNotwendige = true;
@@ -86,7 +86,7 @@ public class Start {
 			while (rohsaetze.hasNext()){
 				
 				// Rohsatz bereinigen und zu Ergebnisliste hinzufuegen
-				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next()));
+				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), true));
 			}
 		}
 		
@@ -101,10 +101,10 @@ public class Start {
 		Logger.getLogger(Start.class.getCanonicalName()).info("Erstelle Baumgraphen.");
 		
 		// Baumgraphen erstellen
-		ArrayList<DelegateForest<Knoten, Kante>> graphenListe = new ArrayList<DelegateForest<Knoten, Kante>>();
+		ArrayList<DelegateTree<Knoten, Kante>> graphenListe = new ArrayList<DelegateTree<Knoten, Kante>>();
 		for (int i=0; i<vergleichWorte.length; i++){
 			// Neuer Graph
-			DelegateForest<Knoten, Kante> graph = new DelegateForest<Knoten, Kante>();
+			DelegateTree<Knoten, Kante> graph = new DelegateTree<Knoten, Kante>();
 			// Wurzelknoten hinzufuegen
 			Knoten wurzel = new Knoten();
 			wurzel.setName(vergleichWorte[i]);
@@ -136,7 +136,7 @@ public class Start {
 				// Pruefen, ob WortFilter greift
 				if (wortFilter[i].hatWort(satz)){
 					// Satz in den Baum/Graphen hineinbauen
-					baumBauer.baueBaum(satz.toArray(new String[satz.size()]), graphenListe.get(i).getRoots().toArray(new Knoten[1])[0], graphenListe.get(i), false);
+					baumBauer.baueBaum(satz.toArray(new String[satz.size()]), graphenListe.get(i).getRoot(), graphenListe.get(i), false);
 				}
 				
 			}
@@ -172,10 +172,10 @@ public class Start {
 				}
 				
 				// Baeume miteinander vergleichen (Wird weiter unten schrittweise ausgefuehrt, um die kombinierten Baeume graphisch ausgeben zu koennen)
-				//vergleichsmatrix[i][j] = kk.vergleiche(graphenListe.get(i).getRoots().toArray(new Knoten[1])[0], graphenListe.get(j).getRoots().toArray(new Knoten[1])[0]);
+				//vergleichsmatrix[i][j] = kk.vergleiche(graphenListe.get(i).getRoot(), graphenListe.get(j).getRoot());
 				
 				// Baeume der zu vergleichenden Worte miteinander kombinieren
-				Knoten verschmolzenerBaum = kk.verschmelzeBaeume(graphenListe.get(i).getRoots().toArray(new Knoten[1])[0], graphenListe.get(j).getRoots().toArray(new Knoten[1])[0]);
+				Knoten verschmolzenerBaum = kk.verschmelzeBaeume(graphenListe.get(i).getRoot(), graphenListe.get(j).getRoot());
 				
 				// Uebereinstimmungswerte ermitteln
 				Double[] trefferWert = kk.ermittleKnotenTrefferwert(verschmolzenerBaum, -1, 0d);

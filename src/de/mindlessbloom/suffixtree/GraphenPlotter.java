@@ -11,9 +11,10 @@ import javax.swing.JFrame;
 
 import org.apache.commons.collections15.Transformer;
 
+import edu.uci.ics.jung.algorithms.layout.BalloonLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;
-import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
@@ -25,10 +26,25 @@ public class GraphenPlotter {
 	 * Gibt graphische Repraesentation des uebergebenen Graphen aus (via Swing/JUNG2)
 	 * @param graph
 	 */
-	public void plot(DelegateForest<Knoten, Kante> graph){
+	public void plot(DelegateTree<Knoten, Kante> graph){
+		this.plot(graph, 1);
+	}
+	
+	/**
+	 * Gibt graphische Repraesentation des uebergebenen Graphen aus (via Swing/JUNG2)
+	 * @param graph
+	 * @param layoutNr 1: RadialTreeLayout, 2:BalloonLayout
+	 */
+	public void plot(DelegateTree<Knoten, Kante> graph, int layoutNr){
 
 		// Layout des Graphen instanziieren
-		Layout<Knoten, Kante> layout = new RadialTreeLayout<Knoten, Kante>(graph, 50, 50);
+		Layout<Knoten, Kante> layout = null;
+		if (layoutNr==1){
+			layout = new RadialTreeLayout<Knoten, Kante>(graph, 50, 50);
+		} else if (layoutNr==2){
+			layout = new BalloonLayout<Knoten, Kante>(graph);
+		}
+		
 		
 		// Ausgabeklasse instanziieren
 		VisualizationViewer<Knoten, Kante> vv = new VisualizationViewer<Knoten, Kante>(layout);
@@ -63,7 +79,7 @@ public class GraphenPlotter {
 		vv.setGraphMouse(gm);
 		
 		// Neues GUI-Fenster
-		JFrame frame = new JFrame(graph.getRoots().toArray(new Knoten[1])[0].getName());
+		JFrame frame = new JFrame(graph.getRoot().getName());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(vv);
 		frame.pack();

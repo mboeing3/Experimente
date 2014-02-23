@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 
@@ -27,7 +27,7 @@ public class BaumBauer {
 		return this.baueBaum(token, rootnode, null, umgekehrt);
 	}
 	
-    /**
+	/**
      * Erzeugt einen Suffixbaum im uebergebenen Graphen ab dem uebergebenen
      * Knoten anhand der uebergebenen Token. Inkrementiert die Zaehlvariable
      * eines jeden Knotens um eins fuer jede "Beruehrung".
@@ -37,7 +37,55 @@ public class BaumBauer {
      * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
      * @return Die Anzahl der neu erstellten Knoten
      */
-    public int baueBaum(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt) {
+	public int baueBaum(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt) {
+		
+		// Zaehler fuer eingefuegte Knoten
+		int knotenEingefuegt = 0;
+		
+		// Tokenarray durchlaufen
+		for (int i=0; i<token.length; i++){
+			
+			// Bereich fuer naechsten Suffix-Trie ermitteln
+			int von = i;
+			int bis = token.length;
+			if (umgekehrt){
+				von = 0;
+				bis = token.length -i;
+			}
+			
+			// Naechsten Trie in Baum einfuegen
+			knotenEingefuegt += this.baueTrie(Arrays.copyOfRange(token, von, bis), rootnode, graph, umgekehrt);
+			
+		}
+		
+		// Anzahl der eingefuegten Knoten zurueckgeben
+		return knotenEingefuegt;
+		
+	}
+	
+	/**
+     * Erzeugt einen Suffixtrie ab dem uebergebenen Knoten anhand der uebergebenen Token.
+     * Inkrementiert die Zaehlvariable eines jeden Knotens um eins fuer jede "Beruehrung".
+     * @param token String-Array mit Token (Woerter, Buchstaben, Symbole, ... egal was)
+     * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
+     * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
+     * @return Die Anzahl der neu erstellten Knoten
+     */
+	public int baueTrie(String[] token, Knoten rootnode, boolean umgekehrt) {
+		return this.baueTrie(token, rootnode, null, umgekehrt);
+	}
+	
+    /**
+     * Erzeugt einen Suffixtrie im uebergebenen Graphen ab dem uebergebenen
+     * Knoten anhand der uebergebenen Token. Inkrementiert die Zaehlvariable
+     * eines jeden Knotens um eins fuer jede "Beruehrung".
+     * @param token String-Array mit Token (Woerter, Buchstaben, Symbole, ... egal was)
+     * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
+     * @param graph Graph Darf null sein
+     * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
+     * @return Die Anzahl der neu erstellten Knoten
+     */
+    public int baueTrie(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt) {
 
     	// Variable zum Mitzaehlen der erstellten Knoten
 		int knotenerstellt = 0;
@@ -88,12 +136,12 @@ public class BaumBauer {
 		// Pruefen, ob der Baum "umgekehrt" erstellt werden soll
 		if (umgekehrt) {
 			// Rekursiver Aufruf mit Token 0 bis n-1
-			knotenerstellt += this.baueBaum(
+			knotenerstellt += this.baueTrie(
 					Arrays.copyOfRange(token, 0, token.length - 1),
 					kindKnoten, graph, umgekehrt);
 		} else {
 			// Rekursiver Aufruf mit Token 1 bis n
-			knotenerstellt += this.baueBaum(
+			knotenerstellt += this.baueTrie(
 					Arrays.copyOfRange(token, 1, token.length),
 					kindKnoten, graph, umgekehrt);
 		}
@@ -158,7 +206,7 @@ public class BaumBauer {
 	 * @param knoten
 	 * @return
 	 */
-	public DelegateForest<Knoten, Kante> konstruiereGraph(Knoten knoten) {
+	public DelegateTree<Knoten, Kante> konstruiereGraph(Knoten knoten) {
 
 		return this.konstruiereGraph(knoten, null);
 		
@@ -171,11 +219,11 @@ public class BaumBauer {
 	 * @param graph
 	 * @return
 	 */
-	private DelegateForest<Knoten, Kante> konstruiereGraph(Knoten knoten,
-			DelegateForest<Knoten, Kante> graph) {
+	private DelegateTree<Knoten, Kante> konstruiereGraph(Knoten knoten,
+			DelegateTree<Knoten, Kante> graph) {
 
 		if (graph == null) {
-			graph = new DelegateForest<Knoten, Kante>();
+			graph = new DelegateTree<Knoten, Kante>();
 			graph.setRoot(knoten);
 		}
 

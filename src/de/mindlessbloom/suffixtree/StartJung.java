@@ -320,7 +320,7 @@ public class StartJung {
 
 				// Suffix-Tree bauen
 				BaumBauer b = new BaumBauer();
-				b.baueBaum(Arrays.copyOfRange(tokenArrayListe.get(j), i,
+				b.baueTrie(Arrays.copyOfRange(tokenArrayListe.get(j), i,
 						tokenArrayListe.get(j).length), wurzel, graph, false);
 			}
 			System.out.println("fertig.");
