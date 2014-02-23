@@ -54,7 +54,7 @@ public class KnotenKomparator {
 
 		Knoten verschmolzenerBaum = verschmelzeBaeume(k1, k2);
 		Double[] trefferWert = this.ermittleKnotenTrefferwert(verschmolzenerBaum, 3, 0d);
-		System.out.println(trefferWert[0] + ":" + trefferWert[1]);
+		//System.out.println(trefferWert[0] + ":" + trefferWert[1]);
 		return new Double(trefferWert[0] / trefferWert[1]);
 
 	}

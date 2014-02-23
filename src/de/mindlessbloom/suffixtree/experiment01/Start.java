@@ -6,6 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
+
 import de.mindlessbloom.suffixtree.BaumBauer;
 import de.mindlessbloom.suffixtree.GraphenPlotter;
 import de.mindlessbloom.suffixtree.Kante;
@@ -19,23 +23,77 @@ import edu.uci.ics.jung.graph.DelegateTree;
 public class Start {
 
 	public static void main(String[] args) throws Exception {
-
+		
 		/**
-		 * Variablen definieren
+		 * Kommandozeilenoptionen definieren
 		 */
 		
-		// Zu vergleichende Worte festlegen
-		//String[] vergleichWorte = new String[]{"running","walking", "car"};
-		String[] vergleichWorte = new String[]{"running","walking","car"};
+		// Options-Objekt instanziieren
+		Options optionen = new Options();
+
+		// Option fuer zu vergleichende Worte hinzufuegen
+		optionen.addOption("w", true, "Liste der zu vergleichenden Worte");
+
+		// Option fuer graphische Ausgabe hinzufuegen
+		optionen.addOption("g", false, "Graphik anzeigen");
+
+		// Option fuer Layout der graphischen Ausgabe hinzufuegen
+		optionen.addOption("l", true, "Layout des anzuzeigenden Graphen; \"radial\" oder \"balloon\"");
+
+		// Option fuer Anzeigefilter der graphischen Ausgabe hinzufuegen
+		optionen.addOption("t", false, "Nur Trefferknoten in der Graphik anzeigen");
+
+		// Option fuer Pfad zum Korpus hinzufuegen
+		optionen.addOption("k", true, "Pfade, auf bzw. unter denen sich die Korpusdateien befinden.");
+
+		// Option fuer Vergleichsreduktion hinzufuegen
+		optionen.addOption("r", false, "Vergleiche auf das Notwendige reduzieren.");
+
+		// Option fuer Korpuswandlung hinzufuegen
+		optionen.addOption("K", false, "Worte des Korpus beim Einselen in Kleinbuchstaben wandeln.");
+
+		// Option fuer Korpuswandlung hinzufuegen
+		optionen.addOption("S", false, "Saetzen des Korpus beim Einlesen Terminiersymbol ($) anfuegen.");
 		
+		/**
+		 * Kommandozeilenoptionen auswerten
+		 */
+		
+		// Parser fuer Kommandozeilenoptionen
+		CommandLineParser parser = new org.apache.commons.cli.PosixParser();
+		CommandLine kommandozeile = parser.parse( optionen, args);
+		
+		// Zu vergleichende Worte festlegen
+		String[] vergleichWorte = new String[]{"running","walking", "car"};
+		if(kommandozeile.hasOption("w")) {
+			vergleichWorte = kommandozeile.getOptionValues("w");
+		}
+
 		// Graphische Ausgabe des Graphen
-		boolean graphikAusgabe = false;
+		boolean graphikAusgabe = kommandozeile.hasOption("g");
+		boolean zeigeNurTrefferKnoten = kommandozeile.hasOption("t");
 		
 		// Vergleiche ggf. nur auf Notwendige reduzieren
-		boolean reduziereVergleicheAufNotwendige = true;
+		boolean reduziereVergleicheAufNotwendige = kommandozeile.hasOption("r");
+		
+		// Typ des anzuzeigenden Layouts, 1: RadialTreeLayout, 2:BalloonLayout
+		int layoutTyp = 1;
+		if(kommandozeile.hasOption("l")) {
+			layoutTyp = Integer.parseInt(kommandozeile.getOptionValue("l"));
+			if (layoutTyp <1 || layoutTyp >2) layoutTyp = 1;
+		}
 		
 		// Pfade zum OANC.
 		String[] oancSpeicherorte = new String[]{"/Users/marcel/Downloads/OANC/data/written_1/","/Users/marcel/Downloads/OANC/data/written_2/"};
+		if(kommandozeile.hasOption("k")) {
+			oancSpeicherorte = kommandozeile.getOptionValues("k");
+		}
+		
+		// Worte des Korpus beim Einlesen in Kleinbuchstaben wandeln
+		boolean wandleInKleinbuchstaben = kommandozeile.hasOption("K");
+		
+		// Saetzen des Korpus beim Einlesen Terminiersymbol anfuegen
+		boolean fuegeTerminierSymbolHinzu = kommandozeile.hasOption("S");
 
 		/**
 		 * Korpus einlesen (Ergebnis in Objekt satzListe)
@@ -86,7 +144,7 @@ public class Start {
 			while (rohsaetze.hasNext()){
 				
 				// Rohsatz bereinigen und zu Ergebnisliste hinzufuegen
-				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), true));
+				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben));
 			}
 		}
 		
@@ -180,8 +238,8 @@ public class Start {
 				// Uebereinstimmungswerte ermitteln
 				Double[] trefferWert = kk.ermittleKnotenTrefferwert(verschmolzenerBaum, -1, 0d);
 				
-				// DEBUG
-				System.out.println(trefferWert[0] + ":" + trefferWert[1]);
+				// Meldung ueber Vergleichsergebnis
+				Logger.getLogger(Start.class.getCanonicalName()).info("Vergleich "+graphenListe.get(i).getRoot().getName()+" - "+graphenListe.get(j).getRoot().getName()+" : "+trefferWert[0] + "/" + trefferWert[1]);
 				
 				// Uebereinstimmungswerte auf Anteilswert reduzieren und in Matrix speichern
 				vergleichsmatrix[i][j] = trefferWert[0] / trefferWert[1];
@@ -189,7 +247,16 @@ public class Start {
 				// Ggf. Graphikausgabe der Graphen mittels JUNG2-API
 				if (graphikAusgabe) {
 					GraphenPlotter gp = new GraphenPlotter();
-					gp.plot(baumBauer.konstruiereGraph(baumBauer.entferneNichtTrefferKnoten(verschmolzenerBaum,true)));
+					Knoten plotBaum = null;
+					
+					// Ggf. nur Treffer plotten
+					if (zeigeNurTrefferKnoten){
+						plotBaum = baumBauer.entferneNichtTrefferKnoten(verschmolzenerBaum,true);
+					} else {
+						plotBaum = verschmolzenerBaum;
+					}
+					// Plot durchfuehren
+					gp.plot(baumBauer.konstruiereGraph(plotBaum), layoutTyp);
 				}
 			}
 		}
@@ -202,7 +269,7 @@ public class Start {
 		MatrixPlotter plotter = new MatrixPlotter();
 		
 		// Matrix ausgeben (auf Konsole)
-		plotter.plot(vergleichsmatrix);
+		plotter.plot(vergleichsmatrix, vergleichWorte);
 
 		
 

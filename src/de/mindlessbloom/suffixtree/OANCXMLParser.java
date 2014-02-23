@@ -135,7 +135,7 @@ public class OANCXMLParser {
 	 * @param rohsatz
 	 * @return Wortliste
 	 */
-	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeTerminierSymbolEin){
+	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeTerminierSymbolEin, boolean wandleZuKleinbuchstaben){
 		List<String> ergebnisListe = new ArrayList<String>();
 		
 		// Satz segmentieren
@@ -145,6 +145,10 @@ public class OANCXMLParser {
 		for (int i=0; i<segmente.length; i++){
 			// Segment bereinigen und in Ergebnis speichern
 			String segment = segmente[i].replaceAll(ZUENTFERNENDEZEICHENREGEX, "").trim();
+			// Ggf. zu Kleinbuchstaben wandeln
+			if (wandleZuKleinbuchstaben){
+				segment = segment.toLowerCase();
+			}
 			if (!segment.isEmpty())
 				ergebnisListe.add(segment.intern());
 		}
