@@ -16,16 +16,18 @@ public class KnotenKomparator {
 	
 	private int maximaleAuswertungsEbene = -1;
 	private double ebenenexponent = 0d;
+	private boolean ebenenFaktorNurAufTrefferAnwenden = false;
 	
 	public KnotenKomparator() {
 		super();
 	}
 
 	public KnotenKomparator(int maximaleAuswertungsEbene,
-			double ebenenexponentpositiv) {
+			double ebenenexponentpositiv, boolean ebenenFaktorNurAufTrefferAnwenden) {
 		super();
 		this.maximaleAuswertungsEbene = maximaleAuswertungsEbene;
 		this.ebenenexponent = ebenenexponentpositiv;
+		this.ebenenFaktorNurAufTrefferAnwenden = ebenenFaktorNurAufTrefferAnwenden;
 	}
 
 	public int getMaximaleAuswertungsEbene() {
@@ -53,8 +55,7 @@ public class KnotenKomparator {
 	public Double vergleiche(Knoten k1, Knoten k2) {
 
 		Knoten verschmolzenerBaum = verschmelzeBaeume(k1, k2);
-		Double[] trefferWert = this.ermittleKnotenTrefferwert(verschmolzenerBaum, 3, 0d);
-		//System.out.println(trefferWert[0] + ":" + trefferWert[1]);
+		Double[] trefferWert = this.ermittleKnotenTrefferwert(verschmolzenerBaum, this.maximaleAuswertungsEbene, this.ebenenexponent);
 		return new Double(trefferWert[0] / trefferWert[1]);
 
 	}
@@ -182,7 +183,7 @@ public class KnotenKomparator {
 	/**
 	 * Wertet die Zaehlvariable der Knoten des uebergebenen Baumes aus.
 	 * 
-	 * @see #ermittleKnotenTrefferwert(Knoten knoten, int ebene, int maxebene, double ebenenexponentpositiv, double ebenenexponentnegativ)
+	 * @see #ermittleKnotenTrefferwert(Knoten knoten, int ebene, int maxebene, double ebenenexponent)
 	 * @param knoten Der Knoten des Baumes, ab dem ausgewertet werden soll.
 	 * @return double-Array mit Trefferwert auf Index 0, Gesamtwert auf Index 1.
 	 */
@@ -194,7 +195,7 @@ public class KnotenKomparator {
 	/**
 	 * Wertet die Zaehlvariable der Knoten des uebergebenen Baumes aus.
 	 * 
-	 * @see #ermittleKnotenTrefferwert(Knoten knoten, int ebene, int maxebene, double ebenenexponentpositiv, double ebenenexponentnegativ)
+	 * @see #ermittleKnotenTrefferwert(Knoten knoten, int ebene, int maxebene, double ebenenexponent)
 	 * @param knoten Der Knoten des Baumes, ab dem ausgewertet werden soll.
 	 * @param maxebene Tiefste Ebene der Baumhierarchie, die noch ausgewertet werden soll.
 	 * @param ebenenexponent Exponent der Ebenennummer, welche Faktor fuer die Wertung von Knoten ist.
@@ -232,7 +233,11 @@ public class KnotenKomparator {
 						* Math.pow(ebene, ebenenexponent);
 			}
 			// Zaehlerwert zur Gesamtzahl addieren
-			knotenMatches[1] += knoten.getZaehler()* Math.pow(ebene, ebenenexponent);
+			if (ebenenFaktorNurAufTrefferAnwenden){
+				knotenMatches[1] += knoten.getZaehler();
+			} else {
+				knotenMatches[1] += knoten.getZaehler()* Math.pow(ebene, ebenenexponent);
+			}
 		}
 
 		if (ebene < maxebene || maxebene <0) {

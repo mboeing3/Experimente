@@ -62,7 +62,7 @@ public class MatrixPlotter {
 				if (matrix[i][j] != null){
 					ergebnis.append(matrix[i][j]);
 				} else {
-					ergebnis.append("X");
+					ergebnis.append("-");
 				}
 				
 				ergebnis.append("\t");

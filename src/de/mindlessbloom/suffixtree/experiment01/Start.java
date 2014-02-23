@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 import de.mindlessbloom.suffixtree.BaumBauer;
@@ -31,29 +32,44 @@ public class Start {
 		// Options-Objekt instanziieren
 		Options optionen = new Options();
 
+		// Option fuer Hilfstext anzeigen
+		optionen.addOption("h", false, "Gibt Information zur Benutzung des Programms aus.");
+
 		// Option fuer zu vergleichende Worte hinzufuegen
-		optionen.addOption("w", true, "Liste der zu vergleichenden Worte");
+		optionen.addOption("w", true, "Zu vergleichendes Wort (Option ist mehrfach anwendbar).");
 
 		// Option fuer graphische Ausgabe hinzufuegen
-		optionen.addOption("g", false, "Graphik anzeigen");
+		optionen.addOption("g", false, "Graphik anzeigen.");
 
 		// Option fuer Layout der graphischen Ausgabe hinzufuegen
-		optionen.addOption("l", true, "Layout des anzuzeigenden Graphen; \"radial\" oder \"balloon\"");
+		optionen.addOption("l", true, "Layout des anzuzeigenden Graphen; \"radial\" (Standard) oder \"balloon\".");
 
 		// Option fuer Anzeigefilter der graphischen Ausgabe hinzufuegen
 		optionen.addOption("t", false, "Nur Trefferknoten in der Graphik anzeigen");
 
 		// Option fuer Pfad zum Korpus hinzufuegen
-		optionen.addOption("k", true, "Pfade, auf bzw. unter denen sich die Korpusdateien befinden.");
+		optionen.addOption("k", true, "Pfad, auf bzw. unter dem sich die Korpusdateien befinden (Option ist mehrfach anwendbar).");
 
 		// Option fuer Vergleichsreduktion hinzufuegen
 		optionen.addOption("r", false, "Vergleiche auf das Notwendige reduzieren.");
 
 		// Option fuer Korpuswandlung hinzufuegen
-		optionen.addOption("K", false, "Worte des Korpus beim Einselen in Kleinbuchstaben wandeln.");
+		optionen.addOption("K", false, "Worte des Korpus beim Einlesen in Kleinbuchstaben wandeln.");
 
 		// Option fuer Korpuswandlung hinzufuegen
 		optionen.addOption("S", false, "Saetzen des Korpus beim Einlesen Terminiersymbol ($) anfuegen.");
+
+		// Option fuer Vergleiche hinzufuegen
+		optionen.addOption("M", true, "Maximale Entfernung des Kontextes vom Vergleichswort, unter derer er noch verglichen wird (-1 = ignorieren (Standard)).");
+
+		// Option fuer Vergleiche hinzufuegen
+		optionen.addOption("E", true, "Exponent der Ebenenzahl, mit der die Werte der Knoten fuer den Vergleich multipliziert werden ( Vergleichswert=Knotenwert*Ebenenzahl^X; 0 = kein Effekt (Standard), <0 = Wertung geringer, je weiter von Vergleichswort entfernt; >0 dito hoeher ).");
+
+		// Option fuer Vergleiche hinzufuegen
+		optionen.addOption("T", false, "Ebenenfaktor beim Vergleich nur auf Trefferknoten anwenden.");
+		
+		// Option fuer Vergleiche hinzufuegen
+		optionen.addOption("Z", false, "Nur den mit dem Vergleichswort beginnenden Zweig des jeweiligen Suffixbaumes zum Vergleich heranziehen.");
 		
 		/**
 		 * Kommandozeilenoptionen auswerten
@@ -62,6 +78,12 @@ public class Start {
 		// Parser fuer Kommandozeilenoptionen
 		CommandLineParser parser = new org.apache.commons.cli.PosixParser();
 		CommandLine kommandozeile = parser.parse( optionen, args);
+		
+		// Ggf. Hilfetext anzeigen
+		if(kommandozeile.hasOption("h")) {
+			System.out.println(Start.hilfeText(optionen));
+			System.exit(0);
+		}
 		
 		// Zu vergleichende Worte festlegen
 		String[] vergleichWorte = new String[]{"running","walking", "car"};
@@ -94,6 +116,18 @@ public class Start {
 		
 		// Saetzen des Korpus beim Einlesen Terminiersymbol anfuegen
 		boolean fuegeTerminierSymbolHinzu = kommandozeile.hasOption("S");
+		
+		// Maximale Entfernung des Kontextes vom Vergleichswort, unter derer er noch verglichen wird (-1 = ignorieren).
+		int maximaleKontextEntfernungVonWort = -1;
+		
+		// Exponent der Ebenenzahl, mit der die Vergleichsergebnisse multipliziert werden ( 0 = kein Effekt; <0 = Wertung geringer, je weiter von Vergleichswort entfernt; >0 dito hoeher )
+		double ebenenFaktorExponent = 0d;
+		
+		// Steuert, ob obiger Ebenenfaktor nur auf die Trefferknoten angewandt werden soll.
+		boolean ebenenFaktorNurAufTrefferAnwenden = kommandozeile.hasOption("T");
+		
+		// Nur den mit dem Vergleichswort beginnenden Zweig des jeweiligen Suffixbaumes zum Vergleich heranziehen.
+		boolean vergleichAufVergleichswortzweigBeschraenken = kommandozeile.hasOption("Z");
 
 		/**
 		 * Korpus einlesen (Ergebnis in Objekt satzListe)
@@ -215,7 +249,7 @@ public class Start {
 		Double[][] vergleichsmatrix = new Double[vergleichWorte.length][vergleichWorte.length];
 		
 		// Komparator instanziieren
-		KnotenKomparator kk = new KnotenKomparator();
+		KnotenKomparator kk = new KnotenKomparator(maximaleKontextEntfernungVonWort, ebenenFaktorExponent, ebenenFaktorNurAufTrefferAnwenden);
 		
 		// Liste der Graphen durchlaufen
 		for (int i=0; i<graphenListe.size(); i++){
@@ -229,14 +263,22 @@ public class Start {
 					continue;
 				}
 				
-				// Baeume miteinander vergleichen (Wird weiter unten schrittweise ausgefuehrt, um die kombinierten Baeume graphisch ausgeben zu koennen)
-				//vergleichsmatrix[i][j] = kk.vergleiche(graphenListe.get(i).getRoot(), graphenListe.get(j).getRoot());
+				// Ggf. nur jene Zweige der jeweiligen Suffixbaeume zum Vergleich heranziehen, die mit dem Vergleichswort beginnen
+				Knoten vergleichsBaumWurzel1;
+				Knoten vergleichsBaumWurzel2;
+				if (vergleichAufVergleichswortzweigBeschraenken){
+					vergleichsBaumWurzel1 = graphenListe.get(i).getRoot().getKinder().get(vergleichWorte[i]);
+					vergleichsBaumWurzel2 = graphenListe.get(j).getRoot().getKinder().get(vergleichWorte[j]);
+				} else {
+					vergleichsBaumWurzel1 = graphenListe.get(i).getRoot();
+					vergleichsBaumWurzel2 = graphenListe.get(j).getRoot();
+				}
 				
 				// Baeume der zu vergleichenden Worte miteinander kombinieren
-				Knoten verschmolzenerBaum = kk.verschmelzeBaeume(graphenListe.get(i).getRoot(), graphenListe.get(j).getRoot());
+				Knoten verschmolzenerBaum = kk.verschmelzeBaeume(vergleichsBaumWurzel1, vergleichsBaumWurzel2);
 				
 				// Uebereinstimmungswerte ermitteln
-				Double[] trefferWert = kk.ermittleKnotenTrefferwert(verschmolzenerBaum, -1, 0d);
+				Double[] trefferWert = kk.ermittleKnotenTrefferwert(verschmolzenerBaum, maximaleKontextEntfernungVonWort, ebenenFaktorExponent);
 				
 				// Meldung ueber Vergleichsergebnis
 				Logger.getLogger(Start.class.getCanonicalName()).info("Vergleich "+graphenListe.get(i).getRoot().getName()+" - "+graphenListe.get(j).getRoot().getName()+" : "+trefferWert[0] + "/" + trefferWert[1]);
@@ -270,8 +312,22 @@ public class Start {
 		
 		// Matrix ausgeben (auf Konsole)
 		plotter.plot(vergleichsmatrix, vergleichWorte);
-
+	}
+	
+	/**
+	 * Gibt Hilfetext zu uebergebenen Optionen aus.
+	 * @param optionen
+	 * @return
+	 */
+	private static String hilfeText(Options optionen){
+		StringBuffer ergebnis = new StringBuffer();
 		
-
+		Iterator<Option> optionsIt = optionen.getOptions().iterator();
+		while(optionsIt.hasNext()){
+			Option o = optionsIt.next();
+			ergebnis.append(o.toString()+"\n");
+		}
+		
+		return ergebnis.toString();
 	}
 }
