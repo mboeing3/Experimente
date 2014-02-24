@@ -71,6 +71,9 @@ public class Start {
 		// Option fuer Vergleiche hinzufuegen
 		optionen.addOption("Z", false, "Nur den mit dem Vergleichswort beginnenden Zweig des jeweiligen Suffixbaumes zum Vergleich heranziehen.");
 		
+		// Option fuer Parsing hinzufuegen
+		optionen.addOption("p", false, "Punktuation nicht entfernen und als eigenstaendige Woerter bzw. Token behandeln.");
+		
 		/**
 		 * Kommandozeilenoptionen auswerten
 		 */
@@ -128,6 +131,9 @@ public class Start {
 		
 		// Nur den mit dem Vergleichswort beginnenden Zweig des jeweiligen Suffixbaumes zum Vergleich heranziehen.
 		boolean vergleichAufVergleichswortzweigBeschraenken = kommandozeile.hasOption("Z");
+		
+		// Punktuation nicht entfernen und als eigenstaendige Woerter bzw. Token behandeln.
+		boolean behaltePunktuation = kommandozeile.hasOption("p");
 
 		/**
 		 * Korpus einlesen (Ergebnis in Objekt satzListe)
@@ -178,7 +184,7 @@ public class Start {
 			while (rohsaetze.hasNext()){
 				
 				// Rohsatz bereinigen und zu Ergebnisliste hinzufuegen
-				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben));
+				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben, behaltePunktuation));
 			}
 		}
 		

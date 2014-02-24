@@ -20,7 +20,8 @@ public class OANCXMLParser {
 	public static final String TERMINIERSYMBOL="$";
 	public static final String SATZGRENZENDATEISUFFIX="-s";
 	public static final String WORTTRENNERREGEX = "[\\ \\n\\t]+";
-	public static final String ZUENTFERNENDEZEICHENREGEX = "[\\.\\,\\;\\\"]*";
+	public static final String ZEICHENSETZUNGSREGEX = "((?<=[\\.\\,\\;\\\"\\'])|(?=[\\.\\,\\;\\\"\\']))"; // <String>.split() trennt hiermit Zeichen ab und behaelt sie als Elemente
+	public static final String ZUENTFERNENDEZEICHENREGEX = "[\\.\\,\\;\\\"\\']*";
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
 	
@@ -130,12 +131,12 @@ public class OANCXMLParser {
 	}
 	
 	/**
-	 * Bereinigt und segmentiert den uebergebenen Satz. Entfernt Zeilenumbrueche, Tabulatoren, Leerzeichen, Punktiuation.
+	 * Bereinigt und segmentiert den uebergebenen Satz. Entfernt Zeilenumbrueche, Tabulatoren, Leerzeichen, Punktuation.
 	 * Fuegt ggf. am Ende das Terminiersymbol ein.
 	 * @param rohsatz
 	 * @return Wortliste
 	 */
-	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeTerminierSymbolEin, boolean wandleZuKleinbuchstaben){
+	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeTerminierSymbolEin, boolean wandleZuKleinbuchstaben, boolean behalteSatzzeichenAlsToken){
 		List<String> ergebnisListe = new ArrayList<String>();
 		
 		// Satz segmentieren
@@ -143,14 +144,30 @@ public class OANCXMLParser {
 		
 		// Segmente durchlaufen
 		for (int i=0; i<segmente.length; i++){
-			// Segment bereinigen und in Ergebnis speichern
-			String segment = segmente[i].replaceAll(ZUENTFERNENDEZEICHENREGEX, "").trim();
-			// Ggf. zu Kleinbuchstaben wandeln
-			if (wandleZuKleinbuchstaben){
-				segment = segment.toLowerCase();
+			
+			// Wort, ggf. mit Zeichensetzung, daher als Array
+			String[] segment;
+			
+			// Satzzeigen als Token behalten oder entfernen?
+			if (behalteSatzzeichenAlsToken){
+				// Zeichensetzung trennen
+				segment = segmente[i].split(ZEICHENSETZUNGSREGEX);
+			} else {
+				// Segment bereinigen und in Ergebnis speichern
+				segment = new String[]{segmente[i].replaceAll(ZUENTFERNENDEZEICHENREGEX, "").trim()};
 			}
-			if (!segment.isEmpty())
-				ergebnisListe.add(segment.intern());
+			
+			// Schleife ueber Token des Segments
+			for (int j=0; j<segment.length; j++){
+				// Ggf. zu Kleinbuchstaben wandeln
+				if (wandleZuKleinbuchstaben){
+					segment[j] = segment[j].toLowerCase();
+				}
+				if (!segment[j].isEmpty())
+					ergebnisListe.add(segment[j].intern());
+			}
+			
+			
 		}
 		
 		// Ggf. Terminiersymbol einfuegen
