@@ -112,7 +112,7 @@ public class BaumBauer {
 			knotenerstellt++;
 			
 			// Den Namen der Kante in der Node speichern .. um spaeter bei Bedarf die Knoten geordnet ausgeben zu koennen (debug)
-			kindKnoten.setName(token[vergleichsTokenIndex].intern());
+			kindKnoten.setName(token[vergleichsTokenIndex]);
 			
 			// Kind dem Elternknoten anfuegen
 			rootnode.getKinder().put(token[vergleichsTokenIndex], kindKnoten);
@@ -120,7 +120,7 @@ public class BaumBauer {
 			// Ggf. Graphen aktualisieren
 			if (graph != null) {
 				// Kante
-				Kante neueKante = new Kante(token[vergleichsTokenIndex].intern());
+				Kante neueKante = new Kante(token[vergleichsTokenIndex]);
 				graph.addEdge(neueKante, rootnode, kindKnoten,
 						EdgeType.DIRECTED);
 			}
@@ -230,7 +230,7 @@ public class BaumBauer {
 		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
 		while (kinder.hasNext()) {
 			Knoten kind = knoten.getKinder().get(kinder.next());
-			Kante neueKante = new Kante(kind.getName().intern());
+			Kante neueKante = new Kante(kind.getName());
 			graph.addEdge(neueKante, knoten, kind, EdgeType.DIRECTED);
 			konstruiereGraph(kind, graph);
 		}

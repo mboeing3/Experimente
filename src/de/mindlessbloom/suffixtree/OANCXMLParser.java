@@ -161,7 +161,7 @@ public class OANCXMLParser {
 			for (int j=0; j<segment.length; j++){
 				// Ggf. zu Kleinbuchstaben wandeln
 				if (wandleZuKleinbuchstaben){
-					segment[j] = segment[j].toLowerCase();
+					segment[j] = segment[j].toLowerCase().intern();
 				}
 				if (!segment[j].isEmpty())
 					ergebnisListe.add(segment[j].intern());
