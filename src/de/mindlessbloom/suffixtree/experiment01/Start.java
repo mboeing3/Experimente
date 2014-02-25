@@ -168,7 +168,10 @@ public class Start {
 			File korpusDatei = korpusDateien.next();
 			
 			// Meldung ausgeben
-			Logger.getLogger(Start.class.getCanonicalName()).info("Parse Korpusdatei "+korpusDateiZaehler+"/"+korpusDateiListe.size()+" : "+korpusDatei.getAbsolutePath());
+			double prozentFertig = Math.ceil(((double)korpusDateiZaehler / (double)korpusDateiListe.size())*100);
+			if (korpusDateiZaehler % (korpusDateiListe.size()/20) == 0){
+				Logger.getLogger(Start.class.getCanonicalName()).info("Parse "+korpusDateiListe.size()+" Korpusdateien : "+prozentFertig+"%");
+			}
 			
 			// Aktuelle Korpusdatei als Quelle fuer Parser setzen
 			oancParser.setQuellDatei(korpusDatei);
@@ -224,7 +227,9 @@ public class Start {
 		// Vergleichswortliste durchlaufen
 		for (int i=0; i<vergleichWorte.length; i++){
 			
-			// Saetze aus Korpus durchlaufen
+			// Saetze aus Korpus durchlaufen, Treffer mitzaehlen (fuer Anzeige)
+			int saetzeDurchlaufen = 0;
+			int saetzeGefunden = 0;
 			Iterator<List<String>> saetze = satzListe.iterator();
 			while(saetze.hasNext()){
 				
@@ -235,9 +240,23 @@ public class Start {
 				if (wortFilter[i].hatWort(satz)){
 					// Satz in den Baum/Graphen hineinbauen
 					baumBauer.baueBaum(satz.toArray(new String[satz.size()]), graphenListe.get(i).getRoot(), graphenListe.get(i), false);
+					
+					// Treffer mitzaehlen
+					saetzeGefunden++;
+				}
+				
+				// Durchlaufenen Satz mitzaehlen
+				saetzeDurchlaufen++;
+				
+				// Meldung ausgeben
+				double prozentFertig = Math.ceil(((double)saetzeDurchlaufen / (double)satzListe.size())*100);
+				if (saetzeDurchlaufen % (satzListe.size()/20) == 0){
+					Logger.getLogger(Start.class.getCanonicalName()).info("Ermittle Saetze, die Wort '"+vergleichWorte[i]+"' beinhalten: "+saetzeDurchlaufen+"/"+satzListe.size()+" ("+saetzeGefunden+") "+prozentFertig+"%");
 				}
 				
 			}
+			// Zeilenumbruch in Anzeige ausgeben
+			System.out.println();
 			
 		}
 
