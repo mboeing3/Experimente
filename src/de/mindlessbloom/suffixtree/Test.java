@@ -1,5 +1,6 @@
 package de.mindlessbloom.suffixtree;
 
+import de.mindlessbloom.suffixtree.experiment01.KnotenKomparator;
 import edu.uci.ics.jung.graph.DelegateTree;
 
 
@@ -7,23 +8,39 @@ public class Test {
 
 	public static void main(String[] args) {
 		
-		String[] eingabe = new String[]{"Erwin mag Anna $",
-		"Thomas mag Anna auch $",
-		"mag Anna auch Thomas $"};
+		String[] eingabe = new String[]{"Anna .",
+		"Anna auch .",
+		"Anna auch Thomas ?"};
+		
+		String[] eingabe2 = new String[]{"Anna .",
+				"Anna auch .",
+				"Anna auch Thomas ?"};
 		
 		BaumBauer b = new BaumBauer();
 		Knoten wurzel = new Knoten();
+		Knoten wurzel2 = new Knoten();
 		wurzel.setName("^");
+		wurzel2.setName("^");
 		DelegateTree<Knoten, Kante> graph = new DelegateTree<Knoten, Kante>();
 		graph.setRoot(wurzel);
+		DelegateTree<Knoten, Kante> graph2 = new DelegateTree<Knoten, Kante>();
+		graph2.setRoot(wurzel2);
 		for (int i=0; i<eingabe.length; i++){
-			b.baueBaum(eingabe[i].split(" "), wurzel, graph, false);
+			//b.baueBaum(eingabe[i].split(" "), wurzel, graph, false);
+			b.baueTrie(eingabe[i].split(" "), wurzel, graph, false);
 		}
-		
+		for (int i=0; i<eingabe2.length; i++){
+			//b.baueBaum(eingabe2[i].split(" "), wurzel2, graph2, false);
+			b.baueTrie(eingabe2[i].split(" "), wurzel2, graph2, false);
+		}
+		KnotenKomparator kk = new KnotenKomparator();
+		Knoten vergleichsbaum = kk.verschmelzeBaeume(wurzel, wurzel2);
 		
 		GraphenPlotter g = new GraphenPlotter();
 		
-		g.plot(graph, 2);
+		g.plot(b.konstruiereGraph(wurzel), 2);
+		g.plot(b.konstruiereGraph(wurzel2), 2);
+		g.plot(b.konstruiereGraph(vergleichsbaum), 2);
 
 	}
 

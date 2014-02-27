@@ -68,10 +68,6 @@ public class KnotenKomparator {
 	 * 
 	 * @param knoten1
 	 * @param knoten2
-	 * @param gleichZuSetzendeWoerter
-	 *            Array von Woertern, die nicht als unterschiedlich gewertet
-	 *            werden sollen. Diese werden im Ergebnisbaum mit dem Wert der
-	 *            Variable WORTPLATZHALTER eingefuegt.
 	 * @return Wurzelknoten des neuen Baumes
 	 */
 	public Knoten verschmelzeBaeume(Knoten knoten1, Knoten knoten2) {

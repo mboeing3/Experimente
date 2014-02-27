@@ -78,6 +78,9 @@ public class GraphenPlotter {
 		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 		vv.setGraphMouse(gm);
 		
+		// Hintergrundfarbe festlegen
+		vv.setBackground(Color.WHITE);
+		
 		// Neues GUI-Fenster
 		JFrame frame = new JFrame(graph.getRoot().getName());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
