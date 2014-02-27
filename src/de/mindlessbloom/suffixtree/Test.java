@@ -8,13 +8,13 @@ public class Test {
 
 	public static void main(String[] args) {
 		
-		String[] eingabe = new String[]{"Anna .",
-		"Anna auch .",
-		"Anna auch Thomas ?"};
+		String[] eingabe = new String[]{"Erwin mag Anna .",
+		"Thomas mag Anna auch .",
+		"mag Anna auch Thomas ?"};
 		
-		String[] eingabe2 = new String[]{"Anna .",
-				"Anna auch .",
-				"Anna auch Thomas ?"};
+		String[] eingabe2 = new String[]{"Erwin liebt Anna .",
+				"Thomas liebt Anna auch .",
+				"liebt Anna auch Thomas ?"};
 		
 		BaumBauer b = new BaumBauer();
 		Knoten wurzel = new Knoten();
