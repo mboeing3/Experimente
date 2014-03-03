@@ -72,11 +72,13 @@ public class KnotenKomparator {
 	 */
 	public Knoten verschmelzeBaeume(Knoten knoten1, Knoten knoten2) {
 
-		// Es wird angenommen, dass knotenTropfen == knotenMeer ist - nur die
-		// Kinder werden ueberprueft.
-
 		// Neuen Knoten erzeugen
 		Knoten ergebnisKnoten = new Knoten();
+
+		// Ermitteln, ob die Knoten gleichwertig sind
+		if (knoten1 != null && knoten2 != null && knoten1.getName().equals(knoten2.getName())){
+			ergebnisKnoten.setMatch(true);
+		}
 
 		// Ggf. Werte der uebergebenen Knoten aufaddieren und Kinder hinzufuegen
 		if (knoten1 != null) {
@@ -102,9 +104,6 @@ public class KnotenKomparator {
 					kindKnoten = this.verschmelzeBaeume(knoten1.getKinder()
 							.get(k1KindName),
 							knoten2.getKinder().get(k1KindName));
-
-					// Markiere Knoten als Treffer
-					kindKnoten.setMatch(true);
 
 				} else {
 					// Kein Kind mit diesem Namen gefunden oder Knoten2 ist
@@ -156,9 +155,6 @@ public class KnotenKomparator {
 					kindKnoten = this.verschmelzeBaeume(knoten1.getKinder()
 							.get(k2KindName),
 							knoten2.getKinder().get(k2KindName));
-
-					// Markiere Knoten als Treffer
-					kindKnoten.setMatch(true);
 
 				} else {
 					// Kein Kind mit diesem Namen gefunden oder Knoten2 ist
@@ -222,6 +218,7 @@ public class KnotenKomparator {
 			int maxebene, double ebenenexponent) {
 		Double[] knotenMatches = new Double[] { 0d, 0d };
 
+		// Zaehlerwerte ermitteln (der Wurzelknoten wird ignoriert)
 		if (ebene > 0){
 			if (knoten.isMatch()) {
 				// Treffer - zum Ergebnis addieren
