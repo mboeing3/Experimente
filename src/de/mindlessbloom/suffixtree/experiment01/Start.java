@@ -60,7 +60,7 @@ public class Start {
 		optionen.addOption("S", false, "Saetzen des Korpus beim Einlesen Terminiersymbol ($) anfuegen.");
 
 		// Option fuer Vergleiche hinzufuegen
-		optionen.addOption("M", true, "Maximale Entfernung des Kontextes vom Vergleichswort, unter derer er noch verglichen wird (-1 = ignorieren (Standard)).");
+		optionen.addOption("M", true, "Maximale Ebene, bis zu der Baeume miteinander vergleichen werden (-1 = ignorieren (Standard)).");
 
 		// Option fuer Vergleiche hinzufuegen
 		optionen.addOption("E", true, "Exponent der Ebenenzahl, mit der die Werte der Knoten fuer den Vergleich multipliziert werden ( Vergleichswert=Knotenwert*Ebenenzahl^X; 0 = kein Effekt (Standard), <0 = Wertung geringer, je weiter von Vergleichswort entfernt; >0 dito hoeher ).");
@@ -259,6 +259,10 @@ public class Start {
 			System.out.println();
 			
 		}
+		
+		// Die Satzliste wird ab hier nicht mehr gebraucht - der Heap-Speicher, den sie belegt, kann freigegeben werden.
+		satzListe = null;
+		System.gc();
 
 		/**
 		 * Graphen vergleichen
