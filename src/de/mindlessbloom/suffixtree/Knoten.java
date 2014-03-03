@@ -11,7 +11,7 @@ public class Knoten {
 
 	public Knoten() {
 		super();
-		this.zaehler = 1;
+		this.zaehler = 0;
 		this.kinder = new HashMap<String,Knoten>();
 		
 	}

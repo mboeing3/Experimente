@@ -89,6 +89,9 @@ public class BaumBauer {
 
     	// Variable zum Mitzaehlen der erstellten Knoten
 		int knotenerstellt = 0;
+		
+		// "Beruehrung" des Knotens mitzaehlen
+		rootnode.setZaehler(rootnode.getZaehler() + 1);
 
 		if (token == null || token.length == 0) {
 			return knotenerstellt;
@@ -128,9 +131,6 @@ public class BaumBauer {
 		} else {
 			// passender Knoten vorhanden
 			kindKnoten = rootnode.getKinder().get(token[0]);
-			
-			// "Beruehrung" des existierenden Knotens mitzaehlen
-			kindKnoten.setZaehler(kindKnoten.getZaehler() + 1);
 		}
 
 		// Pruefen, ob der Baum "umgekehrt" erstellt werden soll
