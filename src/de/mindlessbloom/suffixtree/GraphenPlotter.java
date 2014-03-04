@@ -55,20 +55,10 @@ public class GraphenPlotter {
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<Kante>());
 		
 		// Visuelle Merkmale der Knoten konfigurieren (Treffer = gruen, andere = rot)
-        Transformer<Knoten,Paint> vertexColor = new Transformer<Knoten,Paint>() {
-            public Paint transform(Knoten arg0) {
-                if(arg0.isMatch()) return Color.GREEN;
-                return Color.RED;
-            }
-        };
+        Transformer<Knoten,Paint> vertexColor = new RotGruenTransformer();
+        //Transformer<Knoten,Paint> vertexColor = new SchwarzWeissTransformer();
         // Visuelle Merkmale der Knoten konfigurieren (Je hoeher der Beruehrungszaehlerwert des Knoten, desto groesser wird dieser dargestellt)
-        Transformer<Knoten,Shape> vertexSize = new Transformer<Knoten,Shape>(){
-            public Shape transform(Knoten arg0){
-                Ellipse2D circle = new Ellipse2D.Double(-15, -15, 30, 30);
-                // Zur besseren Uebersichtlichkeit ist der Zusammenhang zwischen Zaehlerwert und visueller Groesse logarithmisch
-                return AffineTransform.getScaleInstance(Math.log((double)arg0.getZaehler()+2d)/4d, Math.log((double)arg0.getZaehler()+2d)/4d).createTransformedShape(circle);
-            }
-        };
+        Transformer<Knoten,Shape> vertexSize = new GewichtGroesseTransformer();
         // Merkmalsdefinitionen an Ausgabeklasse anfuegen
         vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
         vv.getRenderContext().setVertexShapeTransformer(vertexSize);

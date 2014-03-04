@@ -1,6 +1,7 @@
 package de.mindlessbloom.suffixtree;
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 
 /**
  * Stellt Methoden zur Anzeige von Matrizen zur Verfuegung.
@@ -10,6 +11,7 @@ import java.io.PrintStream;
 public class MatrixPlotter {
 
 	private PrintStream ausgabe;
+	private DecimalFormat format = null;
 	
 	public MatrixPlotter() {
 		super();
@@ -29,6 +31,14 @@ public class MatrixPlotter {
 		this.ausgabe = ausgabe;
 	}
 	
+	public DecimalFormat getFormat() {
+		return format;
+	}
+
+	public void setFormat(DecimalFormat format) {
+		this.format = format;
+	}
+
 	/**
 	 * Gibt einen String mit der Repraesentation der uebergebenen Matrix zurueck.
 	 * @param matrix
@@ -48,7 +58,7 @@ public class MatrixPlotter {
 		StringBuffer ergebnis = new StringBuffer();
 		
 		for (int i=0; beschriftung != null && i<beschriftung.length; i++){
-			ergebnis.append("\t"+beschriftung[i]+"\t");
+			ergebnis.append("\t"+beschriftung[i]);
 		}
 		ergebnis.append("\n");
 		
@@ -60,7 +70,11 @@ public class MatrixPlotter {
 			
 			for (int j=0; j<matrix[i].length; j++){
 				if (matrix[i][j] != null){
-					ergebnis.append(matrix[i][j]);
+					if (this.format != null){
+						ergebnis.append(this.format.format(matrix[i][j]));
+					} else {
+						ergebnis.append(matrix[i][j]);
+					}
 				} else {
 					ergebnis.append("-");
 				}

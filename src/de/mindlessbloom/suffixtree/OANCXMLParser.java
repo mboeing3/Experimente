@@ -20,8 +20,8 @@ public class OANCXMLParser {
 	public static final String TERMINIERSYMBOL="$";
 	public static final String SATZGRENZENDATEISUFFIX="-s";
 	public static final String WORTTRENNERREGEX = "[\\ \\n\\t]+";
-	public static final String ZEICHENSETZUNGSREGEX = "((?<=[\\.\\,\\;\\\"\\'])|(?=[\\.\\,\\;\\\"\\']))"; // <String>.split() trennt hiermit Zeichen ab und behaelt sie als Elemente
-	public static final String ZUENTFERNENDEZEICHENREGEX = "[\\.\\,\\;\\\"\\']*";
+	public static final String ZEICHENSETZUNGSREGEX = "((?<=[\\(\\)\\?\\!\\-\\/\\.\\,\\;\\\"\\'])|(?=[\\(\\)\\?\\!\\-\\/\\.\\,\\;\\\"\\']))"; // <String>.split() trennt hiermit Zeichen ab und behaelt sie als Elemente
+	public static final String ZUENTFERNENDEZEICHENREGEX = "[\\(\\)\\?\\!\\-\\/\\.\\,\\;\\\"\\']*";
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
 	

@@ -1,6 +1,7 @@
 package de.mindlessbloom.suffixtree.experiment01;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -338,6 +339,9 @@ public class Start {
 		
 		// Matrixplotter instanziieren
 		MatrixPlotter plotter = new MatrixPlotter();
+		
+		// Ausgabeformat festlegen
+		plotter.setFormat(new DecimalFormat("0.000"));
 		
 		// Matrix ausgeben (auf Konsole)
 		plotter.plot(vergleichsmatrix, vergleichWorte);

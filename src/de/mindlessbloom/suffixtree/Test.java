@@ -27,14 +27,21 @@ public class Test {
 		graph2.setRoot(wurzel2);
 		for (int i=0; i<eingabe.length; i++){
 			//b.baueBaum(eingabe[i].split(" "), wurzel, graph, false);
-			b.baueTrie(eingabe[i].split(" "), wurzel, graph, false);
+			b.baueBaum(eingabe[i].split(" "), wurzel, graph, false);
 		}
 		for (int i=0; i<eingabe2.length; i++){
 			//b.baueBaum(eingabe2[i].split(" "), wurzel2, graph2, false);
-			b.baueTrie(eingabe2[i].split(" "), wurzel2, graph2, false);
+			b.baueBaum(eingabe2[i].split(" "), wurzel2, graph2, false);
 		}
 		KnotenKomparator kk = new KnotenKomparator();
 		Knoten vergleichsbaum = kk.verschmelzeBaeume(wurzel, wurzel2);
+		
+		// Uebereinstimmungswerte ermitteln
+		Double[] trefferWert = kk.ermittleKnotenTrefferwert(vergleichsbaum);
+		
+		Double d = trefferWert[0] / trefferWert[1];
+		
+		System.out.println("Treffer: "+trefferWert[0] +"/"+ trefferWert[1] +" ("+d+").");
 		
 		GraphenPlotter g = new GraphenPlotter();
 		
