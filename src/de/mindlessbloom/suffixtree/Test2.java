@@ -105,7 +105,7 @@ public class Test2 {
 					while (rohsaetze.hasNext()){
 						
 						// Rohsatz bereinigen und zu Ergebnisliste hinzufuegen
-						satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), true, true, true));
+						satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), true, true, true, true));
 					}
 				}
 				

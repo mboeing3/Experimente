@@ -16,7 +16,8 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.SAXException;
 
 public class OANCXMLParser {
-	
+
+	public static final String STARTSYMBOL = "^";
 	public static final String TERMINIERSYMBOL="$";
 	public static final String SATZGRENZENDATEISUFFIX="-s";
 	public static final String WORTTRENNERREGEX = "[\\ \\n\\t]+";
@@ -136,11 +137,16 @@ public class OANCXMLParser {
 	 * @param rohsatz
 	 * @return Wortliste
 	 */
-	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeTerminierSymbolEin, boolean wandleZuKleinbuchstaben, boolean behalteSatzzeichenAlsToken){
+	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeStartSymbolEin, boolean fuegeTerminierSymbolEin, boolean wandleZuKleinbuchstaben, boolean behalteSatzzeichenAlsToken){
 		List<String> ergebnisListe = new ArrayList<String>();
 		
 		// Satz segmentieren
 		String[] segmente = rohsatz.split(OANCXMLParser.WORTTRENNERREGEX);
+		
+		// Ggf. Startsymbol einfuegen
+		if (fuegeStartSymbolEin){
+			ergebnisListe.add(OANCXMLParser.STARTSYMBOL);
+		}
 		
 		// Segmente durchlaufen
 		for (int i=0; i<segmente.length; i++){

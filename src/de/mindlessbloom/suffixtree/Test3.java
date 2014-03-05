@@ -103,7 +103,7 @@ public class Test3 {
 					// Liste der Rohsaetze durchlaufen
 					Iterator<String> rohsaetze = rohsatzListe.iterator();
 					while (rohsaetze.hasNext()){
-						List<String> satz = oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), true, true, true);
+						List<String> satz = oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), true, true, true, true);
 						Iterator<String> worte = satz.iterator(); 
 						while(worte.hasNext()){
 							System.out.print(worte.next()+" ");

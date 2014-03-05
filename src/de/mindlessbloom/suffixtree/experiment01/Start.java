@@ -68,6 +68,9 @@ public class Start {
 
 		// Option fuer Vergleiche hinzufuegen
 		optionen.addOption("P", false, "Auch Praefixbaeume erstellen und Vergleichen (nur mit Option -Z verwendbar).");
+		
+		// Option fuer Korpuswandlung hinzufuegen
+		optionen.addOption("A", false, "Saetzen des Korpus beim Einlesen Startsymbol (^) voranstellen.");
 				
 		// Option fuer Korpuswandlung hinzufuegen
 		optionen.addOption("S", false, "Saetzen des Korpus beim Einlesen Terminiersymbol ($) anfuegen.");
@@ -121,6 +124,9 @@ public class Start {
 		
 		// Worte des Korpus beim Einlesen in Kleinbuchstaben wandeln
 		boolean wandleInKleinbuchstaben = kommandozeile.hasOption("K");
+		
+		// Saetzen des Korpus beim Einlesen Startsymbol voranstellen
+		boolean fuegeStartSymbolHinzu = kommandozeile.hasOption("A");
 		
 		// Saetzen des Korpus beim Einlesen Terminiersymbol anfuegen
 		boolean fuegeTerminierSymbolHinzu = kommandozeile.hasOption("S");
@@ -195,7 +201,7 @@ public class Start {
 			while (rohsaetze.hasNext()){
 				
 				// Rohsatz bereinigen und zu Ergebnisliste hinzufuegen
-				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben, behaltePunktuation));
+				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(rohsaetze.next(), fuegeStartSymbolHinzu, fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben, behaltePunktuation));
 			}
 		}
 		
@@ -339,7 +345,11 @@ public class Start {
 		
 		// Ggf. auch Praefixbaumvergleichsmatrix ausgeben
 		if (praefixBaumeErstellen){
+			System.out.println("Präfixe:");
 			plotter.plot(praefixvergleichsmatrix, vergleichWorte);
+			
+			System.out.println("Durchschnitt:");
+			plotter.plot(plotter.teileMatrix(plotter.addiereMatrizen(vergleichsmatrix, praefixvergleichsmatrix), 2d), vergleichWorte);
 		}
 	}
 }

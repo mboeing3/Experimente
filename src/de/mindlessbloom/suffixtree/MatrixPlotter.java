@@ -106,5 +106,42 @@ public class MatrixPlotter {
 		this.ausgabe.println(this.toString(matrix, beschriftung));
 	}
 	
+	/**
+	 * Addiert die Werte der uebergebenen Matrizen und gibt eine neue Matrix zurueck.
+	 * Erwartet gleichdimensionierte Matrizen.
+	 * @param m1
+	 * @param m2
+	 * @return Summenmatrix
+	 */
+	public Double[][] addiereMatrizen(Double[][] m1, Double[][] m2){
+		Double[][] neueMatrix = m1.clone();
+		for (int i=0; i<m2.length; i++){
+			for (int j=0; j<m2[i].length; j++){
+				if (m2[i][j]!= null && i<m1.length && j<m1[i].length){
+					neueMatrix[i][j] += m2[i][j];
+				}
+			}
+		}
+		return neueMatrix;
+	}
+	
+	/**
+	 * Teilt die Werte der uebergebenen Matrix.
+	 * @param matrix
+	 * @param divisor
+	 * @return
+	 */
+	public Double[][] teileMatrix(Double[][] matrix, Double divisor){
+		Double[][] neueMatrix = matrix.clone();
+		for (int i=0; i<matrix.length; i++){
+			for (int j=0; j<matrix[i].length; j++){
+				if (matrix[i][j]!= null){
+					neueMatrix[i][j] = neueMatrix[i][j]/divisor;
+				}
+			}
+		}
+		return neueMatrix;
+	}
+	
 	
 }
