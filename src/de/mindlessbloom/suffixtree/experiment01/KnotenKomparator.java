@@ -1,8 +1,14 @@
 package de.mindlessbloom.suffixtree.experiment01;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
+import de.mindlessbloom.suffixtree.BaumBauer;
+import de.mindlessbloom.suffixtree.GraphenPlotter;
+import de.mindlessbloom.suffixtree.Kante;
 import de.mindlessbloom.suffixtree.Knoten;
+import edu.uci.ics.jung.graph.DelegateTree;
 
 /**
  * Vergleicht zwei Suffix(teil)baeume miteinander.
@@ -58,6 +64,91 @@ public class KnotenKomparator {
 		Double[] trefferWert = this.ermittleKnotenTrefferwert(verschmolzenerBaum, this.maximaleAuswertungsEbene, this.ebenenexponent);
 		return new Double(trefferWert[0] / trefferWert[1]);
 
+	}
+	
+	/**
+	 * Vergleicht alle uebergebenen Graphen miteinander und gibt eine Matrix aus Uebereinstimmungsquotienten zurueck.
+	 * @param graphenListe Liste der Graphen
+	 * @param reduziereVergleicheAufNotwendige Vergleiche werden auf Notwendige beschraenkt: Eigenvergleiche (A<->A) und redundante Vergleiche (A<->B B<->A) werden ignoriert.
+	 * @param vergleichAufVergleichswortzweigBeschraenken Nur der Zweig, der mit dem Vergleichswort (das im Wurzelknoten eines jeden Graphen festgehalten ist) beginnt, wird verglichen.
+	 * @param graphenplotter GraphenPlotter-Instanz; null, wenn keine grafische Ausgabe gewuenscht.
+	 * @param zeigeNurTrefferKnoten Im Graphenplot werden nur uebereinstimmende Knoten angezeigt.
+	 * @param layoutTyp Typ des anzuzeigenden Layouts, 1: RadialTreeLayout, 2:BalloonLayout
+	 * @return Matrix aus Uebereinstimmungsquotienten (Double).
+	 */
+	public Double[][] vergleicheAlle(ArrayList<DelegateTree<Knoten, Kante>> graphenListe, boolean reduziereVergleicheAufNotwendige, boolean vergleichAufVergleichswortzweigBeschraenken, GraphenPlotter graphenplotter, boolean zeigeNurTrefferKnoten, int layoutTyp){
+		
+		// Vergleichsmatrix erstellen
+		Double[][] vergleichsmatrix = new Double[graphenListe.size()][graphenListe.size()];
+		
+		// BaumBauer instanziieren
+		BaumBauer baumBauer = new BaumBauer();
+		
+		// Liste der Graphen durchlaufen
+		for (int i = 0; i < graphenListe.size(); i++) {
+
+			// Zweite Dimension durchlaufen
+			for (int j = 0; j < graphenListe.size(); j++) {
+
+				// Ggf. unnoetige Vergleiche ueberspringen
+				if (reduziereVergleicheAufNotwendige && j <= i) {
+					vergleichsmatrix[i][j] = null;
+					continue;
+				}
+
+				// Ggf. nur jene Zweige der jeweiligen Suffixbaeume zum
+				// Vergleich heranziehen, die mit dem Vergleichswort beginnen
+				Knoten vergleichsBaumWurzel1;
+				Knoten vergleichsBaumWurzel2;
+				if (vergleichAufVergleichswortzweigBeschraenken) {
+					vergleichsBaumWurzel1 = graphenListe.get(i).getRoot()
+							.getKinder().get(graphenListe.get(i).getRoot().getName());
+					vergleichsBaumWurzel2 = graphenListe.get(j).getRoot()
+							.getKinder().get(graphenListe.get(j).getRoot().getName());
+				} else {
+					vergleichsBaumWurzel1 = graphenListe.get(i).getRoot();
+					vergleichsBaumWurzel2 = graphenListe.get(j).getRoot();
+				}
+
+				// Baeume der zu vergleichenden Worte miteinander kombinieren
+				Knoten verschmolzenerBaum = this.verschmelzeBaeume(
+						vergleichsBaumWurzel1, vergleichsBaumWurzel2);
+
+				// Uebereinstimmungswerte ermitteln
+				Double[] trefferWert = this.ermittleKnotenTrefferwert(
+						verschmolzenerBaum, this.maximaleAuswertungsEbene,this.ebenenexponent);
+
+				// Meldung ueber Vergleichsergebnis
+				Logger.getLogger(Start.class.getCanonicalName())
+						.info("Vergleich "
+								+ graphenListe.get(i).getRoot().getName()
+								+ " - "
+								+ graphenListe.get(j).getRoot().getName()
+								+ " : " + trefferWert[0] + "/" + trefferWert[1]);
+
+				// Uebereinstimmungswerte auf Anteilswert reduzieren und in
+				// Matrix speichern
+				vergleichsmatrix[i][j] = trefferWert[0] / trefferWert[1];
+
+				// Ggf. Graphikausgabe der Graphen mittels JUNG2-API
+				if (graphenplotter != null) {
+					Knoten plotBaum = null;
+
+					// Ggf. nur Treffer plotten
+					if (zeigeNurTrefferKnoten) {
+						plotBaum = baumBauer.entferneNichtTrefferKnoten(
+								verschmolzenerBaum, true);
+					} else {
+						plotBaum = verschmolzenerBaum;
+					}
+					// Plot durchfuehren
+					graphenplotter.plot(baumBauer.konstruiereGraph(plotBaum), layoutTyp);
+				}
+			}
+		}
+		
+		// Ergebnis zurueckgeben
+		return vergleichsmatrix;
 	}
 
 	/**

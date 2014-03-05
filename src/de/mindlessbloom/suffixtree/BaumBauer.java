@@ -130,7 +130,7 @@ public class BaumBauer {
 
 		} else {
 			// passender Knoten vorhanden
-			kindKnoten = rootnode.getKinder().get(token[0]);
+			kindKnoten = rootnode.getKinder().get(token[vergleichsTokenIndex]);
 		}
 
 		// Pruefen, ob der Baum "umgekehrt" erstellt werden soll
