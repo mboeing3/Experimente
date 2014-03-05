@@ -3,6 +3,7 @@ package de.mindlessbloom.suffixtree.experiment01;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -272,13 +273,33 @@ public class Start {
 				
 				// Pruefen, ob WortFilter greift
 				if (wortFilter[i].hatWort(satz)){
-					// Satz in den Baum/Graphen hineinbauen
-					baumBauer.baueBaum(satz.toArray(new String[satz.size()]), graphenListe.get(i).getRoot(), graphenListe.get(i), false);
 					
-					// Ggf. Satz ebenfalls in den Praefixbaum/-graphen hineinbauen
-					if (praefixBaumeErstellen){
-						baumBauer.baueBaum(satz.toArray(new String[satz.size()]), praefixGraphenListe.get(i).getRoot(), praefixGraphenListe.get(i), true);
+					// Ggf. nur Trie ab dem Vergleichswort bauen
+					if (vergleichAufVergleichswortzweigBeschraenken){
+						
+						// Ermitteln, an welchen Stellen im Satz das Vergleichswort vorkommt
+						Integer[] vergleichsWortIndices = wortFilter[i].getWortIndices(satz);
+						
+						// Indices durchlaufen
+						for (int j=0; j<vergleichsWortIndices.length; j++){
+							// Satz in Array konvertieren
+							String[] satzArray = satz.toArray(new String[satz.size()]);
+							// Satz in den Baum/Graphen hineinbauen
+							baumBauer.baueTrie(Arrays.copyOfRange(satzArray, vergleichsWortIndices[j], satzArray.length), graphenListe.get(i).getRoot(), graphenListe.get(i), false);
+							// Ggf. Satz ebenfalls in den Praefixbaum/-graphen hineinbauen
+							if (praefixBaumeErstellen){
+								baumBauer.baueTrie(Arrays.copyOfRange(satzArray, 0, vergleichsWortIndices[j]+1), praefixGraphenListe.get(i).getRoot(), praefixGraphenListe.get(i), true);
+							}
+						}
+						
+						
+					} else {
+						// Satz in den Baum/Graphen hineinbauen
+						baumBauer.baueBaum(satz.toArray(new String[satz.size()]), graphenListe.get(i).getRoot(), graphenListe.get(i), false);
 					}
+					
+					
+					
 					
 					// Treffer mitzaehlen
 					saetzeGefunden++;

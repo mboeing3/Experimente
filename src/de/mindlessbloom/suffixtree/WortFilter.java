@@ -45,5 +45,34 @@ public class WortFilter {
 		}
 		return false;
 	}
+	
+	/**
+	 * Gibt einen Array mit Indices der Worte zurueck, auf die der Filter passt.
+	 * @param satz
+	 * @return
+	 */
+	public Integer[] getWortIndices(List<String> satz){
+		ArrayList<Integer> indices = new ArrayList<Integer>();
+		Iterator<String> worte = satz.iterator();
+		int index = 0;
+		while(worte.hasNext()){
+			if (this.filterWoerter.contains(worte.next())) indices.add(new Integer(index));
+			index ++;
+		}
+		return indices.toArray(new Integer[indices.size()]);
+	}
+	
+	/**
+	 * Gibt einen Array mit Indices der Worte zurueck, auf die der Filter passt.
+	 * @param satz
+	 * @return
+	 */
+	public Integer[] getWortIndices(String[] satz){
+		ArrayList<Integer> indices = new ArrayList<Integer>();
+		for (int i=0; i<satz.length; i++){
+			if (this.filterWoerter.contains(satz[i])) indices.add(new Integer(i));
+		}
+		return indices.toArray(new Integer[indices.size()]);
+	}
 
 }
