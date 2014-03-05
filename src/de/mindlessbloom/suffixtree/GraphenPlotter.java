@@ -62,6 +62,7 @@ public class GraphenPlotter {
         // Merkmalsdefinitionen an Ausgabeklasse anfuegen
         vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
         vv.getRenderContext().setVertexShapeTransformer(vertexSize);
+        vv.getRenderContext().setVertexDrawPaintTransformer(vertexColor);
 		
 		// Mausinteraktion festlegen
 		DefaultModalGraphMouse<Knoten, Kante> gm = new DefaultModalGraphMouse<Knoten, Kante>();
