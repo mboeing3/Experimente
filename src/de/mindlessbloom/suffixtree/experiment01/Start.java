@@ -44,7 +44,7 @@ public class Start {
 		optionen.addOption("k", true, "Pfad, auf bzw. unter dem sich die Korpusdateien befinden (Option ist mehrfach anwendbar).");
 
 		// Option fuer Layout der graphischen Ausgabe hinzufuegen
-		optionen.addOption("l", true, "Layout des anzuzeigenden Graphen; \"radial\" (Standard) oder \"balloon\" (erfordert Option -g).");
+		optionen.addOption("l", true, "Layout des anzuzeigenden Graphen; 1 (=\"radial\" (Standard)) oder 2 (=\"balloon\") (erfordert Option -g).");
 
 		// Option fuer Parsing hinzufuegen
 		optionen.addOption("p", false, "Punktuation nicht entfernen und als eigenstaendige Woerter bzw. Token behandeln.");
@@ -184,7 +184,7 @@ public class Start {
 			
 			// Meldung ausgeben
 			double prozentFertig = Math.ceil(((double)korpusDateiZaehler / (double)korpusDateiListe.size())*100);
-			if (korpusDateiZaehler % (korpusDateiListe.size()/20) == 0){
+			if ((korpusDateiListe.size()/20!=0) && korpusDateiZaehler % (korpusDateiListe.size()/20) == 0){
 				Logger.getLogger(Start.class.getCanonicalName()).info("Parse "+korpusDateiListe.size()+" Korpusdateien : "+prozentFertig+"%");
 			}
 			
@@ -310,7 +310,7 @@ public class Start {
 				
 				// Meldung ausgeben
 				double prozentFertig = Math.ceil(((double)saetzeDurchlaufen / (double)satzListe.size())*100);
-				if (saetzeDurchlaufen % (satzListe.size()/20) == 0){
+				if ((satzListe.size()/20)!=0 && saetzeDurchlaufen % (satzListe.size()/20) == 0){
 					Logger.getLogger(Start.class.getCanonicalName()).info("Ermittle Saetze, die Wort '"+vergleichWorte[i]+"' beinhalten: "+saetzeDurchlaufen+"/"+satzListe.size()+" ("+saetzeGefunden+") "+prozentFertig+"%");
 				}
 				

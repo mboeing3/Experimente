@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 
 import javax.swing.JFrame;
 
@@ -19,6 +17,8 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
+import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
 public class GraphenPlotter {
 
@@ -63,6 +63,10 @@ public class GraphenPlotter {
         vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
         vv.getRenderContext().setVertexShapeTransformer(vertexSize);
         vv.getRenderContext().setVertexDrawPaintTransformer(vertexColor);
+        DefaultVertexLabelRenderer etikettRenderer = new DefaultVertexLabelRenderer(Color.white);
+        etikettRenderer.setForeground(Color.white); // Keine Auswirkung?
+        vv.getRenderContext().setVertexLabelRenderer(etikettRenderer);
+        //vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 		
 		// Mausinteraktion festlegen
 		DefaultModalGraphMouse<Knoten, Kante> gm = new DefaultModalGraphMouse<Knoten, Kante>();

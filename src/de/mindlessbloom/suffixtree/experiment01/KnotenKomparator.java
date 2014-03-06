@@ -2,6 +2,7 @@ package de.mindlessbloom.suffixtree.experiment01;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import de.mindlessbloom.suffixtree.BaumBauer;
@@ -9,6 +10,7 @@ import de.mindlessbloom.suffixtree.GraphenPlotter;
 import de.mindlessbloom.suffixtree.Kante;
 import de.mindlessbloom.suffixtree.Knoten;
 import edu.uci.ics.jung.graph.DelegateTree;
+import edu.uci.ics.jung.graph.util.EdgeType;
 
 /**
  * Vergleicht zwei Suffix(teil)baeume miteinander.
@@ -141,6 +143,16 @@ public class KnotenKomparator {
 					} else {
 						plotBaum = verschmolzenerBaum;
 					}
+					
+
+					
+					/*// Vergleichsbaum kompaktieren
+					List<String> vergleichsWorte = new ArrayList<String>();
+					vergleichsWorte.add(vergleichsBaumWurzel1.getName());
+					vergleichsWorte.add(vergleichsBaumWurzel2.getName());
+					DelegateTree<Knoten, Kante> graph = new BaumBauer().konstruiereGraph(plotBaum);
+					this.kompaktiereSuffixAst(graph, plotBaum, vergleichsWorte);*/
+					
 					// Plot durchfuehren
 					graphenplotter.plot(baumBauer.konstruiereGraph(plotBaum), layoutTyp);
 				}
@@ -338,6 +350,31 @@ public class KnotenKomparator {
 		}
 
 		return knotenMatches;
+	}
+	
+	/**
+	 * Kompaktiert den uebergebenen Graphen/Baum, indem die Kinder der Knoten, die den uebergebenen Worten entsprechen, auf die Kinder des Wurzelknotens verwiesen werden. Nur sinnvoll bei Vergleichsbaeumen.  
+	 * @param graph
+	 * @param wurzel
+	 * @param worte
+	 */
+	private void kompaktiereSuffixAst(DelegateTree<Knoten, Kante> graph, Knoten wurzel, List<String> worte){
+		
+		Iterator<String> kindKnotenNamen = wurzel.getKinder().keySet().iterator();
+		while(kindKnotenNamen.hasNext()){
+			
+			String kindKnotenName = kindKnotenNamen.next();
+			
+			if (worte.contains(wurzel.getName()) && graph.getRoot().getKinder().containsKey(kindKnotenName)){
+				Kante kante = graph.findEdge(wurzel, wurzel.getKinder().get(kindKnotenName));
+				Kante neueKante = new Kante(kante.getWort());
+				graph.removeEdge(kante);
+				graph.addEdge(neueKante, wurzel, graph.getRoot().getKinder().get(kindKnotenName),EdgeType.DIRECTED); // FUNKTIONIERT NICHT IN DIESER ART GRAPH
+			} else {
+				this.kompaktiereSuffixAst(graph, wurzel.getKinder().get(kindKnotenName), worte);
+			}
+			
+		}
 	}
 
 }
