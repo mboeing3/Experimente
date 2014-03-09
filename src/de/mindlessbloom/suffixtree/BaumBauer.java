@@ -242,6 +242,7 @@ public class BaumBauer {
 	}
 	
 	/**
+	 * @deprecated
 	 * Filtert eine Satzliste (Liste einer Liste von Strings) anhand eines Wortfilters und erstellt im uebergebenen Graphen einen Baum.
 	 * @param wortTyp
 	 * @param satzListe
@@ -335,14 +336,16 @@ public class BaumBauer {
 	 * @param praefixwurzel
 	 * @param vergleichAufVergleichswortzweigBeschraenken
 	 * @param praefixBaumErstellen
+	 * @return Anzahl der in den Saetzen gefundenen Wortvorkommen. 
 	 */
-	public void erstelleGraphenFuerWorttyp(String wortTyp,
+	public int erstelleGraphenFuerWorttyp(String wortTyp,
 			List<List<String>> satzListe, WortFilter wf, Knoten wurzel, Knoten praefixwurzel,
 			boolean vergleichAufVergleichswortzweigBeschraenken,
-			boolean praefixBaumErstellen) {
+			boolean praefixBaumErstellen, boolean ausfuehrlicheFortschrittsMeldungen) {
 		// Saetze aus Korpus durchlaufen, Treffer mitzaehlen (fuer Anzeige)
 		int saetzeDurchlaufen = 0;
 		int saetzeGefunden = 0;
+		int vorkommenGefunden = 0;
 		Iterator<List<String>> saetze = satzListe.iterator();
 		while (saetze.hasNext()) {
 
@@ -358,6 +361,9 @@ public class BaumBauer {
 					// Ermitteln, an welchen Stellen im Satz das Vergleichswort
 					// vorkommt
 					Integer[] vergleichsWortIndices = wf.getWortIndices(satz);
+					
+					// Anzahl der gefundenen Vorkommen mitzaehlen
+					vorkommenGefunden += vergleichsWortIndices.length;
 
 					// Indices durchlaufen
 					for (int j = 0; j < vergleichsWortIndices.length; j++) {
@@ -389,23 +395,30 @@ public class BaumBauer {
 			// Durchlaufenen Satz mitzaehlen
 			saetzeDurchlaufen++;
 
-			// Meldung ausgeben
-			double prozentFertig = Math
-					.ceil(((double) saetzeDurchlaufen / (double) satzListe
-							.size()) * 100);
-			if ((satzListe.size() / 20) != 0
-					&& saetzeDurchlaufen % (satzListe.size() / 20) == 0) {
-				Logger.getLogger(
-						Start.class.getCanonicalName())
-						.info("Ermittle Saetze, die Wort '" + wortTyp
-								+ "' beinhalten: " + saetzeDurchlaufen + "/"
-								+ satzListe.size() + " (" + saetzeGefunden
-								+ ") " + prozentFertig + "%");
+			// ggf. Meldung ausgeben
+			if (ausfuehrlicheFortschrittsMeldungen){
+				double prozentFertig = Math
+						.ceil(((double) saetzeDurchlaufen / (double) satzListe
+								.size()) * 100);
+				if ((satzListe.size() / 20) != 0
+						&& saetzeDurchlaufen % (satzListe.size() / 20) == 0) {
+					Logger.getLogger(
+							Start.class.getCanonicalName())
+							.info("Ermittle Saetze, die Wort '" + wortTyp
+									+ "' beinhalten: " + saetzeDurchlaufen + "/"
+									+ satzListe.size() + " (" + saetzeGefunden
+									+ ") " + prozentFertig + "%");
+				}
 			}
-
 		}
+		
 		// Zeilenumbruch in Anzeige ausgeben
-		System.out.println();
+		if (ausfuehrlicheFortschrittsMeldungen){
+			System.out.println();
+		}
+		
+		// Anzahl der gefundenen Wortvorkommen zurueckgeben
+		return vorkommenGefunden;
 	}
 
 }
