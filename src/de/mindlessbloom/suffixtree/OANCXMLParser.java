@@ -119,7 +119,7 @@ public class OANCXMLParser {
 	    	
 	    	
 	    	// Zeichenarray in String umwandeln und in Ergebnisliste speichern
-	    	ergebnisListe.add(String.copyValueOf(satzZeichenArray));
+	    	ergebnisListe.add(String.copyValueOf(satzZeichenArray).intern());
 	    	
 	    }
 	    

@@ -3,7 +3,6 @@ package de.mindlessbloom.suffixtree.experiment03;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,14 +15,12 @@ import org.apache.commons.cli.Options;
 
 import de.mindlessbloom.suffixtree.BaumBauer;
 import de.mindlessbloom.suffixtree.GraphenPlotter;
-import de.mindlessbloom.suffixtree.Kante;
 import de.mindlessbloom.suffixtree.Knoten;
 import de.mindlessbloom.suffixtree.MatrixPlotter;
 import de.mindlessbloom.suffixtree.OANC;
 import de.mindlessbloom.suffixtree.OANCXMLParser;
 import de.mindlessbloom.suffixtree.WortFilter;
 import de.mindlessbloom.suffixtree.experiment01.KnotenKomparator;
-import edu.uci.ics.jung.graph.DelegateTree;
 
 public class Start {
 
@@ -150,7 +147,7 @@ public class Start {
 		boolean vergleichAufVergleichswortzweigBeschraenken = kommandozeile.hasOption("Z");
 		
 		// Nur den mit dem Vergleichswort beginnenden Zweig des jeweiligen Suffixbaumes zum Vergleich heranziehen.
-		boolean praefixBaumeErstellen = (kommandozeile.hasOption("Z") && kommandozeile.hasOption("P"));
+		boolean praefixBaumErstellen = (kommandozeile.hasOption("Z") && kommandozeile.hasOption("P"));
 		
 		// Punktuation nicht entfernen und als eigenstaendige Woerter bzw. Token behandeln.
 		boolean behaltePunktuation = kommandozeile.hasOption("p");
@@ -224,36 +221,30 @@ public class Start {
 		// Meldung ausgeben
 		Logger.getLogger(Start.class.getCanonicalName()).info("Erstelle Baumgraphen.");
 		
-		// Graphenliste fuer Suffixbaeume erstellen
-		ArrayList<DelegateTree<Knoten, Kante>> graphenListe = new ArrayList<DelegateTree<Knoten, Kante>>();
+		// Liste fuer Wurzelknoten der Suffixbaeume erstellen
+		ArrayList<Knoten> suffixBaumWurzelKnotenListe = new ArrayList<Knoten>();
 		
-		// Ggf. Graphenliste fuer Praefixbaume erstellen 
-		ArrayList<DelegateTree<Knoten, Kante>> praefixGraphenListe = null;
-		if (praefixBaumeErstellen){
-			praefixGraphenListe = new ArrayList<DelegateTree<Knoten, Kante>>();
+		// Ggf. Liste fuer Wurzelknoten der Praefixbaume erstellen 
+		ArrayList<Knoten> praefixBaumWurzelKnotenListe = null;
+		if (praefixBaumErstellen){
+			praefixBaumWurzelKnotenListe = new ArrayList<Knoten>();
 		}
 		
 		// Zu vergleichende Worte durchlaufen
 		for (int i=0; i<vergleichWorte.length; i++){
-			// Neuer Graph
-			DelegateTree<Knoten, Kante> graph = new DelegateTree<Knoten, Kante>();
 			// Wurzelknoten hinzufuegen
 			Knoten wurzel = new Knoten();
 			wurzel.setName(vergleichWorte[i]);
-			graph.setRoot(wurzel);
 			// Graph zur Liste hinzufuegen
-			graphenListe.add(graph);
+			suffixBaumWurzelKnotenListe.add(wurzel);
 			
 			// Ggf. Praefixgraphen erstellen
-			if (praefixBaumeErstellen){
-				// Neuer Graph
-				DelegateTree<Knoten, Kante> praefixGraph = new DelegateTree<Knoten, Kante>();
+			if (praefixBaumErstellen){
 				// Wurzelknoten hinzufuegen
 				Knoten praefixWurzel = new Knoten();
 				praefixWurzel.setName(vergleichWorte[i]);
-				praefixGraph.setRoot(praefixWurzel);
 				// Graph zur Liste hinzufuegen
-				praefixGraphenListe.add(praefixGraph);
+				praefixBaumWurzelKnotenListe.add(praefixWurzel);
 			}
 		}
 
@@ -270,8 +261,14 @@ public class Start {
 		// Vergleichswortliste durchlaufen
 		for (int i=0; i<vergleichWorte.length; i++){
 			
-			// Satzliste durchlaufen und aus Treffern Graphen erstellen
-			baumBauer.erstelleGraphenFuerWorttyp(vergleichWorte[i], satzListe, wortFilter[i], graphenListe.get(i), praefixGraphenListe.get(i), vergleichAufVergleichswortzweigBeschraenken, praefixBaumeErstellen);
+			// Ggf. Wurzelknoten des zugehoerigen Praefixbaumes ermitteln
+			Knoten praefixBaumWurzelKnoten = null;
+			if (praefixBaumErstellen){
+				praefixBaumWurzelKnoten = praefixBaumWurzelKnotenListe.get(i);
+			}
+			
+			// Satzliste durchlaufen und aus Treffern Baeume erstellen
+			baumBauer.erstelleGraphenFuerWorttyp(vergleichWorte[i], satzListe, wortFilter[i], suffixBaumWurzelKnotenListe.get(i), praefixBaumWurzelKnoten, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen);
 			
 		}
 		
@@ -283,7 +280,7 @@ public class Start {
 		
 
 		/**
-		 * Graphen vergleichen
+		 * Baeume vergleichen
 		 * 
 		 * Um sicherzustellen, dass die Vergleichsmethoden korrekt funktionieren,
 		 * werden ALLE moeglichen Zweierkombinationen ueberprueft, also auch
@@ -331,23 +328,17 @@ public class Start {
 						
 						// Pruefen, ob der Ue-Quotient fuer das Wort noch nicht erstellt wurde
 						if (!worttypUebereinstimmungsquotient.containsKey(wort)){
-							
-							// Neuen Graphen erstellen
-							DelegateTree<Knoten, Kante> graph = new DelegateTree<Knoten, Kante>();
+
 							// Wurzelknoten hinzufuegen
 							Knoten wurzel = new Knoten();
 							wurzel.setName(wort);
-							graph.setRoot(wurzel);
 							
 							// Ggf. Praefixgraphen erstellen
-							DelegateTree<Knoten, Kante> praefixGraph = null;
-							if (praefixBaumeErstellen){
-								// Neuer Graph
-								praefixGraph = new DelegateTree<Knoten, Kante>();
+							Knoten praefixWurzel = null;
+							if (praefixBaumErstellen){
 								// Wurzelknoten hinzufuegen
-								Knoten praefixWurzel = new Knoten();
+								praefixWurzel = new Knoten();
 								praefixWurzel.setName(wort);
-								praefixGraph.setRoot(praefixWurzel);
 							}
 							
 							// Neuen WortFilter erstellen
@@ -355,14 +346,14 @@ public class Start {
 							wf.addWort(wort);
 							
 							// Satzliste durchlaufen und aus Treffern Graphen erstellen
-							baumBauer.erstelleGraphenFuerWorttyp(wort, satzListe, wf, graph, praefixGraph, vergleichAufVergleichswortzweigBeschraenken, praefixBaumeErstellen);
+							baumBauer.erstelleGraphenFuerWorttyp(wort, satzListe, wf, wurzel, praefixWurzel, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen);
 							
 							// Uebereinstimmungsquotienten der Graphen von Vergleichswort und aktuellem Worttypen ermitteln
-							Double uebereinstimmungsQuotient = kk.vergleiche(graphenListe.get(i).getRoot().getKinder().get(vergleichWorte[i]), graph.getRoot().getKinder().get(wort));
+							Double uebereinstimmungsQuotient = kk.vergleiche(suffixBaumWurzelKnotenListe.get(i).getKinder().get(vergleichWorte[i]), wurzel.getKinder().get(wort));
 							
 							// Ggf. Praefixbaeume vergleichen und Ergebnis mitteln
-							if (praefixBaumeErstellen){
-								uebereinstimmungsQuotient = (uebereinstimmungsQuotient + kk.vergleiche(praefixGraphenListe.get(i).getRoot().getKinder().get(vergleichWorte[i]), praefixGraph.getRoot().getKinder().get(wort))) / 2d;
+							if (praefixBaumErstellen){
+								uebereinstimmungsQuotient = (uebereinstimmungsQuotient + kk.vergleiche(praefixBaumWurzelKnotenListe.get(i).getKinder().get(vergleichWorte[i]), praefixWurzel.getKinder().get(wort))) / 2d;
 							}
 							
 							// Ergebnis in HashMap fuer Worttypen und Uebereinstimmungsquotienten eintragen
@@ -391,14 +382,17 @@ public class Start {
 			}
 			
 			
-		} else {
+		}
+		
+		// Kein globaler Vergleich, sondern die Vergleichsworte sollen gegeneinander verglichen werden.
+		else {
 			
 			// Vergleichsmatrix erstellen
-			Double[][] vergleichsmatrix = kk.vergleicheAlle(graphenListe, reduziereVergleicheAufNotwendige, vergleichAufVergleichswortzweigBeschraenken, gp, zeigeNurTrefferKnoten, layoutTyp);
+			Double[][] vergleichsmatrix = kk.vergleicheAlleKnoten(suffixBaumWurzelKnotenListe, reduziereVergleicheAufNotwendige, vergleichAufVergleichswortzweigBeschraenken, gp, zeigeNurTrefferKnoten, layoutTyp);
 			// Ggf. Vergleichsmatrix fuer Praefixgraphen erstellen
 			Double[][] praefixvergleichsmatrix = null;
-			if (praefixBaumeErstellen){
-				praefixvergleichsmatrix = kk.vergleicheAlle(praefixGraphenListe, reduziereVergleicheAufNotwendige, vergleichAufVergleichswortzweigBeschraenken, gp, zeigeNurTrefferKnoten, layoutTyp);
+			if (praefixBaumErstellen){
+				praefixvergleichsmatrix = kk.vergleicheAlleKnoten(praefixBaumWurzelKnotenListe, reduziereVergleicheAufNotwendige, vergleichAufVergleichswortzweigBeschraenken, gp, zeigeNurTrefferKnoten, layoutTyp);
 			}
 			
 			/**
@@ -415,7 +409,7 @@ public class Start {
 			plotter.plot(vergleichsmatrix, vergleichWorte);
 			
 			// Ggf. auch Praefixbaumvergleichsmatrix ausgeben
-			if (praefixBaumeErstellen){
+			if (praefixBaumErstellen){
 				System.out.println("Präfixe:");
 				plotter.plot(praefixvergleichsmatrix, vergleichWorte);
 				

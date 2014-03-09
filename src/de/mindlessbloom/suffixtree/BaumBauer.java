@@ -325,5 +325,87 @@ public class BaumBauer {
 		// Zeilenumbruch in Anzeige ausgeben
 		System.out.println();
 	}
+	
+	/**
+	 * Filtert eine Satzliste (Liste einer Liste von Strings) anhand eines Wortfilters und erstellt im uebergebenen Knoten einen Baum.
+	 * @param wortTyp
+	 * @param satzListe
+	 * @param wf
+	 * @param wurzel
+	 * @param praefixwurzel
+	 * @param vergleichAufVergleichswortzweigBeschraenken
+	 * @param praefixBaumErstellen
+	 */
+	public void erstelleGraphenFuerWorttyp(String wortTyp,
+			List<List<String>> satzListe, WortFilter wf, Knoten wurzel, Knoten praefixwurzel,
+			boolean vergleichAufVergleichswortzweigBeschraenken,
+			boolean praefixBaumErstellen) {
+		// Saetze aus Korpus durchlaufen, Treffer mitzaehlen (fuer Anzeige)
+		int saetzeDurchlaufen = 0;
+		int saetzeGefunden = 0;
+		Iterator<List<String>> saetze = satzListe.iterator();
+		while (saetze.hasNext()) {
+
+			// Naechsten Satz ermitteln
+			List<String> satz = saetze.next();
+
+			// Pruefen, ob WortFilter greift
+			if (wf.hatWort(satz)) {
+
+				// Ggf. nur Trie ab dem Vergleichswort bauen
+				if (vergleichAufVergleichswortzweigBeschraenken) {
+
+					// Ermitteln, an welchen Stellen im Satz das Vergleichswort
+					// vorkommt
+					Integer[] vergleichsWortIndices = wf.getWortIndices(satz);
+
+					// Indices durchlaufen
+					for (int j = 0; j < vergleichsWortIndices.length; j++) {
+						// Satz in Array konvertieren
+						String[] satzArray = satz.toArray(new String[satz
+								.size()]);
+						// Satz in den Baum/Graphen hineinbauen
+						this.baueTrie(Arrays.copyOfRange(satzArray,
+								vergleichsWortIndices[j], satzArray.length),
+								wurzel, null, false);
+						// Ggf. Satz ebenfalls in den Praefixbaum/-graphen
+						// hineinbauen
+						if (praefixwurzel != null && praefixBaumErstellen) {
+							this.baueTrie(Arrays.copyOfRange(satzArray, 0,
+									vergleichsWortIndices[j] + 1), praefixwurzel, null, true);
+						}
+					}
+
+				} else {
+					// Satz in den Baum/Graphen hineinbauen
+					this.baueBaum(satz.toArray(new String[satz.size()]),
+							wurzel, null, false);
+				}
+
+				// Treffer mitzaehlen
+				saetzeGefunden++;
+			}
+
+			// Durchlaufenen Satz mitzaehlen
+			saetzeDurchlaufen++;
+
+			// Meldung ausgeben
+			double prozentFertig = Math
+					.ceil(((double) saetzeDurchlaufen / (double) satzListe
+							.size()) * 100);
+			if ((satzListe.size() / 20) != 0
+					&& saetzeDurchlaufen % (satzListe.size() / 20) == 0) {
+				Logger.getLogger(
+						Start.class.getCanonicalName())
+						.info("Ermittle Saetze, die Wort '" + wortTyp
+								+ "' beinhalten: " + saetzeDurchlaufen + "/"
+								+ satzListe.size() + " (" + saetzeGefunden
+								+ ") " + prozentFertig + "%");
+			}
+
+		}
+		// Zeilenumbruch in Anzeige ausgeben
+		System.out.println();
+	}
 
 }

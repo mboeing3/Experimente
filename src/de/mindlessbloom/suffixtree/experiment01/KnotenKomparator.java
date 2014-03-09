@@ -69,6 +69,7 @@ public class KnotenKomparator {
 	}
 	
 	/**
+	 * @deprecated Bitte statt dessen die Methode benutzen, die eine Wurzelknotenliste als eingabe hat.
 	 * Vergleicht alle uebergebenen Graphen miteinander und gibt eine Matrix aus Uebereinstimmungsquotienten zurueck.
 	 * @param graphenListe Liste der Graphen
 	 * @param reduziereVergleicheAufNotwendige Vergleiche werden auf Notwendige beschraenkt: Eigenvergleiche (A<->A) und redundante Vergleiche (A<->B B<->A) werden ignoriert.
@@ -80,17 +81,39 @@ public class KnotenKomparator {
 	 */
 	public Double[][] vergleicheAlle(ArrayList<DelegateTree<Knoten, Kante>> graphenListe, boolean reduziereVergleicheAufNotwendige, boolean vergleichAufVergleichswortzweigBeschraenken, GraphenPlotter graphenplotter, boolean zeigeNurTrefferKnoten, int layoutTyp){
 		
+		// Wurzelknoten aus Graphen extrahieren
+		ArrayList<Knoten> knotenListe = new ArrayList<Knoten>();
+		Iterator<DelegateTree<Knoten, Kante>> graphen = graphenListe.iterator();
+		while(graphen.hasNext()){
+			knotenListe.add(graphen.next().getRoot());
+		}
+		
+		return this.vergleicheAlleKnoten(knotenListe, reduziereVergleicheAufNotwendige, vergleichAufVergleichswortzweigBeschraenken, graphenplotter, zeigeNurTrefferKnoten, layoutTyp);
+	}
+	
+	/**
+	 * Vergleicht alle uebergebenen Baeume miteinander und gibt eine Matrix aus Uebereinstimmungsquotienten zurueck.
+	 * @param knotenListe Liste der Wurzelknoten der miteinander zu vergleichenden Baeume.
+	 * @param reduziereVergleicheAufNotwendige Vergleiche werden auf Notwendige beschraenkt: Eigenvergleiche (A<->A) und redundante Vergleiche (A<->B B<->A) werden ignoriert.
+	 * @param vergleichAufVergleichswortzweigBeschraenken Nur der Zweig, der mit dem Vergleichswort (das im Wurzelknoten eines jeden Graphen festgehalten ist) beginnt, wird verglichen.
+	 * @param graphenplotter GraphenPlotter-Instanz; null, wenn keine grafische Ausgabe gewuenscht.
+	 * @param zeigeNurTrefferKnoten Im Graphenplot werden nur uebereinstimmende Knoten angezeigt.
+	 * @param layoutTyp Typ des anzuzeigenden Layouts, 1: RadialTreeLayout, 2:BalloonLayout
+	 * @return Matrix aus Uebereinstimmungsquotienten (Double).
+	 */
+	public Double[][] vergleicheAlleKnoten(ArrayList<Knoten> knotenListe, boolean reduziereVergleicheAufNotwendige, boolean vergleichAufVergleichswortzweigBeschraenken, GraphenPlotter graphenplotter, boolean zeigeNurTrefferKnoten, int layoutTyp){
+		
 		// Vergleichsmatrix erstellen
-		Double[][] vergleichsmatrix = new Double[graphenListe.size()][graphenListe.size()];
+		Double[][] vergleichsmatrix = new Double[knotenListe.size()][knotenListe.size()];
 		
 		// BaumBauer instanziieren
 		BaumBauer baumBauer = new BaumBauer();
 		
 		// Liste der Graphen durchlaufen
-		for (int i = 0; i < graphenListe.size(); i++) {
+		for (int i = 0; i < knotenListe.size(); i++) {
 
 			// Zweite Dimension durchlaufen
-			for (int j = 0; j < graphenListe.size(); j++) {
+			for (int j = 0; j < knotenListe.size(); j++) {
 
 				// Ggf. unnoetige Vergleiche ueberspringen
 				if (reduziereVergleicheAufNotwendige && j <= i) {
@@ -103,13 +126,13 @@ public class KnotenKomparator {
 				Knoten vergleichsBaumWurzel1;
 				Knoten vergleichsBaumWurzel2;
 				if (vergleichAufVergleichswortzweigBeschraenken) {
-					vergleichsBaumWurzel1 = graphenListe.get(i).getRoot()
-							.getKinder().get(graphenListe.get(i).getRoot().getName());
-					vergleichsBaumWurzel2 = graphenListe.get(j).getRoot()
-							.getKinder().get(graphenListe.get(j).getRoot().getName());
+					vergleichsBaumWurzel1 = knotenListe.get(i)
+							.getKinder().get(knotenListe.get(i).getName());
+					vergleichsBaumWurzel2 = knotenListe.get(j)
+							.getKinder().get(knotenListe.get(j).getName());
 				} else {
-					vergleichsBaumWurzel1 = graphenListe.get(i).getRoot();
-					vergleichsBaumWurzel2 = graphenListe.get(j).getRoot();
+					vergleichsBaumWurzel1 = knotenListe.get(i);
+					vergleichsBaumWurzel2 = knotenListe.get(j);
 				}
 
 				// Baeume der zu vergleichenden Worte miteinander kombinieren
@@ -123,9 +146,9 @@ public class KnotenKomparator {
 				// Meldung ueber Vergleichsergebnis
 				Logger.getLogger(Start.class.getCanonicalName())
 						.info("Vergleich "
-								+ graphenListe.get(i).getRoot().getName()
+								+ knotenListe.get(i).getName()
 								+ " - "
-								+ graphenListe.get(j).getRoot().getName()
+								+ knotenListe.get(j).getName()
 								+ " : " + trefferWert[0] + "/" + trefferWert[1]);
 
 				// Uebereinstimmungswerte auf Anteilswert reduzieren und in
