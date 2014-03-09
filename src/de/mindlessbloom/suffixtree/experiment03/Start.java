@@ -83,6 +83,9 @@ public class Start {
 		
 		// Option fuer Vergleiche hinzufuegen
 		optionen.addOption("X", false, "Worte nicht gegeneinander, sondern mit ALLEN Worttypen des Korpus vergleichen.");
+
+		// Option fuer Meldungen hinzufuegen
+		optionen.addOption("v", false, "Ausfuehrlichere Meldungen.");
 		
 		/**
 		 * Kommandozeilenoptionen auswerten
@@ -154,6 +157,9 @@ public class Start {
 		
 		// Worte nicht gegeneinander, sondern mit ALLEN Worttypen des Korpus vergleichen.
 		boolean worteGlobalVergleichen = kommandozeile.hasOption("X");
+		
+		// Ausfuehrlichere Meldungen.
+		boolean ausfuehrlicheMeldungen = kommandozeile.hasOption("v");
 
 		/**
 		 * Korpus einlesen (Ergebnis in Objekt satzListe)
@@ -178,6 +184,9 @@ public class Start {
 		// Zaehler fur Korpusdateien (Kosmetik)
 		int korpusDateiZaehler = 0;
 		
+		// Meldung ausgeben
+		Logger.getLogger(Start.class.getCanonicalName()).info("Parse "+korpusDateiListe.size()+" Korpusdateien.");
+		
 		// Korpusdateiliste durchlaufen
 		Iterator<File> korpusDateien = korpusDateiListe.iterator();
 		while(korpusDateien.hasNext()){
@@ -187,10 +196,12 @@ public class Start {
 			// Naechste Korpusdatei ermitteln
 			File korpusDatei = korpusDateien.next();
 			
-			// Meldung ausgeben
-			double prozentFertig = Math.ceil(((double)korpusDateiZaehler / (double)korpusDateiListe.size())*100);
-			if ((korpusDateiListe.size()/20!=0) && korpusDateiZaehler % (korpusDateiListe.size()/20) == 0){
-				Logger.getLogger(Start.class.getCanonicalName()).info("Parse "+korpusDateiListe.size()+" Korpusdateien : "+prozentFertig+"%");
+			// Ggf. ausfuehrliche Meldung ausgeben
+			if (ausfuehrlicheMeldungen){
+				double prozentFertig = Math.ceil(((double)korpusDateiZaehler / (double)korpusDateiListe.size())*100);
+				if ((korpusDateiListe.size()/20!=0) && korpusDateiZaehler % (korpusDateiListe.size()/20) == 0){
+					Logger.getLogger(Start.class.getCanonicalName()).info("Parse "+korpusDateiListe.size()+" Korpusdateien : "+prozentFertig+"%");
+				}
 			}
 			
 			// Aktuelle Korpusdatei als Quelle fuer Parser setzen
@@ -219,7 +230,7 @@ public class Start {
 		 */
 		
 		// Meldung ausgeben
-		Logger.getLogger(Start.class.getCanonicalName()).info("Erstelle Baumgraphen.");
+		Logger.getLogger(Start.class.getCanonicalName()).info("Erstelle Datenstrukturen.");
 		
 		// Liste fuer Wurzelknoten der Suffixbaeume erstellen
 		ArrayList<Knoten> suffixBaumWurzelKnotenListe = new ArrayList<Knoten>();
@@ -268,7 +279,12 @@ public class Start {
 			}
 			
 			// Satzliste durchlaufen und aus Treffern Baeume erstellen
-			baumBauer.erstelleGraphenFuerWorttyp(vergleichWorte[i], satzListe, wortFilter[i], suffixBaumWurzelKnotenListe.get(i), praefixBaumWurzelKnoten, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen);
+			int gefundeneVorkommen = baumBauer.erstelleGraphenFuerWorttyp(vergleichWorte[i], satzListe, wortFilter[i], suffixBaumWurzelKnotenListe.get(i), praefixBaumWurzelKnoten, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen, ausfuehrlicheMeldungen);
+			
+			// Ggf. knappe Statusmeldung ausgeben
+			if (!ausfuehrlicheMeldungen){
+				Logger.getLogger(Start.class.getCanonicalName()).info(gefundeneVorkommen+" Vorkommen von "+vergleichWorte[i]+" gefunden.");
+			}
 			
 		}
 		
@@ -346,7 +362,12 @@ public class Start {
 							wf.addWort(wort);
 							
 							// Satzliste durchlaufen und aus Treffern Graphen erstellen
-							baumBauer.erstelleGraphenFuerWorttyp(wort, satzListe, wf, wurzel, praefixWurzel, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen);
+							int gefundeneVorkommen = baumBauer.erstelleGraphenFuerWorttyp(wort, satzListe, wf, wurzel, praefixWurzel, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen, ausfuehrlicheMeldungen);
+							
+							// Ggf. knappe Statusmeldung ausgeben
+							if (!ausfuehrlicheMeldungen){
+								Logger.getLogger(Start.class.getCanonicalName()).info(gefundeneVorkommen+" Vorkommen von "+wort+" gefunden.");
+							}
 							
 							// Uebereinstimmungsquotienten der Graphen von Vergleichswort und aktuellem Worttypen ermitteln
 							Double uebereinstimmungsQuotient = kk.vergleiche(suffixBaumWurzelKnotenListe.get(i).getKinder().get(vergleichWorte[i]), wurzel.getKinder().get(wort));
