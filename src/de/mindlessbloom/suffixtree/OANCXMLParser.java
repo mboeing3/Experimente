@@ -21,8 +21,9 @@ public class OANCXMLParser {
 	public static final String TERMINIERSYMBOL="$";
 	public static final String SATZGRENZENDATEISUFFIX="-s";
 	public static final String WORTTRENNERREGEX = "[\\ \\n\\t\u200B]+";
-	public static final String ZEICHENSETZUNGSREGEX = "((?<=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…])|(?=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…]))"; // <String>.split() trennt hiermit Zeichen ab und behaelt sie als Elemente
-	public static final String ZUENTFERNENDEZEICHENREGEX = "[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…]*";
+	//public static final String ZEICHENSETZUNGSREGEX = "((?<=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…])|(?=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…]))"; // <String>.split() trennt hiermit Zeichen ab und behaelt sie als Elemente
+	public static final String SATZZEICHENABTRENNERREGEX = "((?<=[^(\\p{L}\\p{M}*+)])|(?=[^(\\p{L}\\p{M}*+)]))";
+	public static final String ZUENTFERNENDEZEICHENREGEX = "[^(\\p{L}\\p{M}*+)]*";
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
 	
@@ -157,7 +158,7 @@ public class OANCXMLParser {
 			// Satzzeigen als Token behalten oder entfernen?
 			if (behalteSatzzeichenAlsToken){
 				// Zeichensetzung trennen
-				segment = segmente[i].split(ZEICHENSETZUNGSREGEX);
+				segment = segmente[i].split(SATZZEICHENABTRENNERREGEX);
 			} else {
 				// Segment bereinigen und in Ergebnis speichern
 				segment = new String[]{segmente[i].replaceAll(ZUENTFERNENDEZEICHENREGEX, "").trim()};
