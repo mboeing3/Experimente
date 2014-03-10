@@ -338,7 +338,7 @@ public class BaumBauer {
 	 * @param praefixBaumErstellen
 	 * @return Anzahl der in den Saetzen gefundenen Wortvorkommen. 
 	 */
-	public int erstelleGraphenFuerWorttyp(String wortTyp,
+	public int baueTrieAusSaetzenMitWorttyp(String wortTyp,
 			List<List<String>> satzListe, WortFilter wf, Knoten wurzel, Knoten praefixwurzel,
 			boolean vergleichAufVergleichswortzweigBeschraenken,
 			boolean praefixBaumErstellen, boolean ausfuehrlicheFortschrittsMeldungen) {

@@ -279,7 +279,7 @@ public class Start {
 			}
 			
 			// Satzliste durchlaufen und aus Treffern Baeume erstellen
-			int gefundeneVorkommen = baumBauer.erstelleGraphenFuerWorttyp(vergleichWorte[i], satzListe, wortFilter[i], suffixBaumWurzelKnotenListe.get(i), praefixBaumWurzelKnoten, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen, ausfuehrlicheMeldungen);
+			int gefundeneVorkommen = baumBauer.baueTrieAusSaetzenMitWorttyp(vergleichWorte[i], satzListe, wortFilter[i], suffixBaumWurzelKnotenListe.get(i), praefixBaumWurzelKnoten, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen, ausfuehrlicheMeldungen);
 			
 			// Ggf. knappe Statusmeldung ausgeben
 			if (!ausfuehrlicheMeldungen){
@@ -344,19 +344,19 @@ public class Start {
 						// Naechstes Wort ermitteln
 						String wort = worte.next();
 						
-						// Ggf. ueberspringen, wenn WortTyp == Vergleichwort
-						if (reduziereVergleicheAufNotwendige && wort.equals(vergleichWorte[i])){
-							continue;
-						}
-						
 						// Pruefen, ob der Ue-Quotient fuer das Wort noch nicht erstellt wurde
 						if (!worttypUebereinstimmungsquotient.containsKey(wort)){
+							
+							// Ggf. ueberspringen, wenn WortTyp == Vergleichwort
+							if (reduziereVergleicheAufNotwendige && wort.equals(vergleichWorte[i])){
+								continue;
+							}
 
 							// Wurzelknoten hinzufuegen
 							Knoten wurzel = new Knoten();
 							wurzel.setName(wort);
 							
-							// Ggf. Praefixgraphen erstellen
+							// Ggf. Praefixwurzelknoten erstellen
 							Knoten praefixWurzel = null;
 							if (praefixBaumErstellen){
 								// Wurzelknoten hinzufuegen
@@ -368,8 +368,8 @@ public class Start {
 							WortFilter wf = new WortFilter();
 							wf.addWort(wort);
 							
-							// Satzliste durchlaufen und aus Treffern Graphen erstellen
-							int gefundeneVorkommen = baumBauer.erstelleGraphenFuerWorttyp(wort, satzListe, wf, wurzel, praefixWurzel, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen, ausfuehrlicheMeldungen);
+							// Satzliste durchlaufen und aus Treffern Tries erstellen
+							int gefundeneVorkommen = baumBauer.baueTrieAusSaetzenMitWorttyp(wort, satzListe, wf, wurzel, praefixWurzel, vergleichAufVergleichswortzweigBeschraenken, praefixBaumErstellen, ausfuehrlicheMeldungen);
 							
 							// Ggf. knappe Statusmeldung ausgeben
 							if (!ausfuehrlicheMeldungen){

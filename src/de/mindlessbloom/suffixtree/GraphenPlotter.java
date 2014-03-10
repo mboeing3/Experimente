@@ -16,6 +16,7 @@ import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.ConstantDirectionalEdgeValueTransformer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
@@ -55,18 +56,25 @@ public class GraphenPlotter {
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<Kante>());
 		
 		// Visuelle Merkmale der Knoten konfigurieren (Treffer = gruen, andere = rot)
-        Transformer<Knoten,Paint> vertexColor = new RotGruenTransformer();
+        Transformer<Knoten,Paint> vertexColor = new RotGruenTransformer(100);
         //Transformer<Knoten,Paint> vertexColor = new SchwarzWeissTransformer();
         // Visuelle Merkmale der Knoten konfigurieren (Je hoeher der Beruehrungszaehlerwert des Knoten, desto groesser wird dieser dargestellt)
-        Transformer<Knoten,Shape> vertexSize = new GewichtGroesseTransformer();
+        Transformer<Knoten,Shape> vertexSize = new GewichtGroesseTransformer(4d);
         // Merkmalsdefinitionen an Ausgabeklasse anfuegen
         vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
         vv.getRenderContext().setVertexShapeTransformer(vertexSize);
-        vv.getRenderContext().setVertexDrawPaintTransformer(vertexColor);
+        Transformer<Knoten,Paint> vertexRandColor = new RotGruenTransformer();
+        vv.getRenderContext().setVertexDrawPaintTransformer(vertexRandColor);
         DefaultVertexLabelRenderer etikettRenderer = new DefaultVertexLabelRenderer(Color.white);
         etikettRenderer.setForeground(Color.white); // Keine Auswirkung?
         vv.getRenderContext().setVertexLabelRenderer(etikettRenderer);
-        //vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+        
+        // Knotenetikette mittig im Knoten darstellen
+        vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+        
+        // Kantenetikette mittig platzieren
+        ConstantDirectionalEdgeValueTransformer<Knoten, Kante> kantenEtikettTransformer = new ConstantDirectionalEdgeValueTransformer<Knoten, Kante>(0.5d, 0.5d);
+		vv.getRenderContext().setEdgeLabelClosenessTransformer(kantenEtikettTransformer);
 		
 		// Mausinteraktion festlegen
 		DefaultModalGraphMouse<Knoten, Kante> gm = new DefaultModalGraphMouse<Knoten, Kante>();
