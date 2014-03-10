@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -21,9 +22,12 @@ public class OANCXMLParser {
 	public static final String TERMINIERSYMBOL="$";
 	public static final String SATZGRENZENDATEISUFFIX="-s";
 	public static final String WORTTRENNERREGEX = "[\\ \\n\\t\u200B]+";
+	public static final Pattern WORTTRENNERREGEXMUSTER = Pattern.compile(WORTTRENNERREGEX);
 	//public static final String ZEICHENSETZUNGSREGEX = "((?<=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…])|(?=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…]))"; // <String>.split() trennt hiermit Zeichen ab und behaelt sie als Elemente
-	public static final String SATZZEICHENABTRENNERREGEX = "((?<=[^(\\p{L}\\p{M}*+)])|(?=[^(\\p{L}\\p{M}*+)]))";
+	public static final String SATZZEICHENABTRENNERREGEX = "((?<=[\\[\\(\\]\\)]|[^(\\p{L}\\p{M}*+)])|(?=[\\[\\(\\]\\)]|[^(\\p{L}\\p{M}*+)]))";
+	public static final Pattern SATZZEICHENABTRENNERREGEXMUSTER = Pattern.compile(SATZZEICHENABTRENNERREGEX);
 	public static final String ZUENTFERNENDEZEICHENREGEX = "[^(\\p{L}\\p{M}*+)]*";
+	public static final Pattern ZUENTFERNENDEZEICHENREGEXMUSTER = Pattern.compile(ZUENTFERNENDEZEICHENREGEX);
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
 	
@@ -142,7 +146,7 @@ public class OANCXMLParser {
 		List<String> ergebnisListe = new ArrayList<String>();
 		
 		// Satz segmentieren
-		String[] segmente = rohsatz.split(OANCXMLParser.WORTTRENNERREGEX);
+		String[] segmente = OANCXMLParser.WORTTRENNERREGEXMUSTER.split(rohsatz);
 		
 		// Ggf. Startsymbol einfuegen
 		if (fuegeStartSymbolEin){
@@ -158,7 +162,7 @@ public class OANCXMLParser {
 			// Satzzeigen als Token behalten oder entfernen?
 			if (behalteSatzzeichenAlsToken){
 				// Zeichensetzung trennen
-				segment = segmente[i].split(SATZZEICHENABTRENNERREGEX);
+				segment = SATZZEICHENABTRENNERREGEXMUSTER.split(segmente[i]);
 			} else {
 				// Segment bereinigen und in Ergebnis speichern
 				segment = new String[]{segmente[i].replaceAll(ZUENTFERNENDEZEICHENREGEX, "").trim()};

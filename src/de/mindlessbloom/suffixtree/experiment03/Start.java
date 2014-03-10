@@ -326,9 +326,16 @@ public class Start {
 				// HashMap fuer Worttypen und Uebereinstimmungsquotienten erstellen
 				HashMap<String,Double> worttypUebereinstimmungsquotient = new HashMap<String,Double>();
 				
+				// Verarbeitete Saetze mitzaehlen
+				int verarbeiteteSaetze = 0;
+				int satzAnzahl = satzListe.size();
+				
 				// Liste der TokenArrays (bzw. Saetze) durchlaufen
 				Iterator<List<String>> saetze = satzListe.iterator();
 				while(saetze.hasNext()){
+					
+					// Verarbeitete Saetze mitzaehlen
+					verarbeiteteSaetze++;
 					
 					// Token (bzw. Worte) durchlaufen
 					Iterator<String> worte = saetze.next().iterator();
@@ -366,7 +373,7 @@ public class Start {
 							
 							// Ggf. knappe Statusmeldung ausgeben
 							if (!ausfuehrlicheMeldungen){
-								Logger.getLogger(Start.class.getCanonicalName()).info(gefundeneVorkommen+" Vorkommen von "+wort+" gefunden.");
+								Logger.getLogger(Start.class.getCanonicalName()).info("[Satz "+verarbeiteteSaetze+" von "+satzAnzahl+"] Gefundene Vorkommen von \'"+wort+"\': "+gefundeneVorkommen);
 							}
 							
 							// Uebereinstimmungsquotienten der Graphen von Vergleichswort und aktuellem Worttypen ermitteln
