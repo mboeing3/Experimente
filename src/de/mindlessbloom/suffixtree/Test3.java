@@ -1,22 +1,13 @@
 package de.mindlessbloom.suffixtree;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
-import org.xml.sax.SAXException;
-
-import de.mindlessbloom.suffixtree.experiment01.KnotenKomparator;
-import de.mindlessbloom.suffixtree.experiment01.Start;
-import edu.uci.ics.jung.graph.DelegateTree;
 
 
 public class Test3 {
@@ -71,7 +62,7 @@ public class Test3 {
 				OANCXMLParser oancParser = new OANCXMLParser();
 				
 				// Liste fuer Ergebnis erstellen
-				ArrayList<List<String>> satzListe = new ArrayList<List<String>>();
+				//ArrayList<List<String>> satzListe = new ArrayList<List<String>>();
 				
 				// Zaehler fur Korpusdateien (Kosmetik)
 				int korpusDateiZaehler = 0;

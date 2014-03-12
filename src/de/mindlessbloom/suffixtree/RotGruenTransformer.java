@@ -7,7 +7,6 @@ import org.apache.commons.collections15.Transformer;
 
 public class RotGruenTransformer implements Transformer<Knoten,Paint> {
 	
-	private int gbplus = 0;
 	private int[] gruen_rgbwerte = new int[] {105,169,41};
 	private int[] rot_rgbwerte = new int[] {145,18,43};
 	
@@ -17,7 +16,6 @@ public class RotGruenTransformer implements Transformer<Knoten,Paint> {
 
 	public RotGruenTransformer(int gbplus) {
 		super();
-		this.gbplus = gbplus;
 		for (int i=0; i<3; i++){
 			if (gruen_rgbwerte[i]+gbplus>255){
 				gruen_rgbwerte[i] = 255;

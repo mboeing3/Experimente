@@ -1,6 +1,5 @@
 package de.mindlessbloom.suffixtree;
 
-import de.mindlessbloom.suffixtree.experiment01.KnotenKomparator;
 import edu.uci.ics.jung.graph.DelegateTree;
 
 

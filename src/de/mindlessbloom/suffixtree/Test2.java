@@ -1,22 +1,14 @@
 package de.mindlessbloom.suffixtree;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
-import org.xml.sax.SAXException;
-
-import de.mindlessbloom.suffixtree.experiment01.KnotenKomparator;
-import de.mindlessbloom.suffixtree.experiment01.Start;
-import edu.uci.ics.jung.graph.DelegateTree;
 
 
 public class Test2 {
@@ -168,6 +160,9 @@ public class Test2 {
 				// Speicherinfo ausgeben
 				Logger.getLogger(Test2.class.getCanonicalName()).info("Suffixbaumgroesse: "+ wurzel.getZaehler());
 				
+				// Exemplarisch einen Zweig als Graphik ausgeben
+				GraphenPlotter g = new GraphenPlotter();
+				g.plot(baumBauer.konstruiereGraph(wurzel.getKinder().get("walking")));
 
 	}
 

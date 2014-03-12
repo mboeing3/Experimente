@@ -1,16 +1,10 @@
-package de.mindlessbloom.suffixtree.experiment01;
+package de.mindlessbloom.suffixtree;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 
-import de.mindlessbloom.suffixtree.BaumBauer;
-import de.mindlessbloom.suffixtree.GraphenPlotter;
-import de.mindlessbloom.suffixtree.Kante;
-import de.mindlessbloom.suffixtree.Knoten;
 import edu.uci.ics.jung.graph.DelegateTree;
-import edu.uci.ics.jung.graph.util.EdgeType;
 
 /**
  * Vergleicht zwei Suffix(teil)baeume miteinander.
@@ -144,7 +138,7 @@ public class KnotenKomparator {
 						verschmolzenerBaum, this.maximaleAuswertungsEbene,this.ebenenexponent);
 
 				// Meldung ueber Vergleichsergebnis
-				Logger.getLogger(Start.class.getCanonicalName())
+				Logger.getLogger(KnotenKomparator.class.getCanonicalName())
 						.info("Vergleich "
 								+ knotenListe.get(i).getName()
 								+ " - "
@@ -381,7 +375,7 @@ public class KnotenKomparator {
 	 * @param wurzel
 	 * @param worte
 	 */
-	private void kompaktiereSuffixAst(DelegateTree<Knoten, Kante> graph, Knoten wurzel, List<String> worte){
+	/*private void kompaktiereSuffixAst(DelegateTree<Knoten, Kante> graph, Knoten wurzel, List<String> worte){
 		
 		Iterator<String> kindKnotenNamen = wurzel.getKinder().keySet().iterator();
 		while(kindKnotenNamen.hasNext()){
@@ -398,6 +392,6 @@ public class KnotenKomparator {
 			}
 			
 		}
-	}
+	}*/
 
 }

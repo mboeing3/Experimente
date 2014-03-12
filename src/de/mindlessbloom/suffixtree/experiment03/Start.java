@@ -16,11 +16,11 @@ import org.apache.commons.cli.Options;
 import de.mindlessbloom.suffixtree.BaumBauer;
 import de.mindlessbloom.suffixtree.GraphenPlotter;
 import de.mindlessbloom.suffixtree.Knoten;
+import de.mindlessbloom.suffixtree.KnotenKomparator;
 import de.mindlessbloom.suffixtree.MatrixPlotter;
 import de.mindlessbloom.suffixtree.OANC;
 import de.mindlessbloom.suffixtree.OANCXMLParser;
 import de.mindlessbloom.suffixtree.WortFilter;
-import de.mindlessbloom.suffixtree.experiment01.KnotenKomparator;
 
 public class Start {
 

@@ -52,7 +52,7 @@ public class BaumBauer {
      * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
      * @param graph Graph Darf null sein
      * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
-     * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes (<0 = ignorieren)
+     * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes, inklusive des Wurzelknotens (<0 = ignorieren)
      * @return Die Anzahl der neu erstellten Knoten
      */
 	public int baueBaum(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt, int maxLaenge) {
@@ -123,16 +123,11 @@ public class BaumBauer {
     	// Variable zum Mitzaehlen der erstellten Knoten
 		int knotenerstellt = 0;
 		
-		// Bei Ueberschreitung der maximal hinzuzufuegenden Anzahl an Token wird abgebrochen
-		if (maxLaenge==0) {
-			return knotenerstellt;
-		}
-		
 		// "Beruehrung" des Knotens mitzaehlen
 		rootnode.setZaehler(rootnode.getZaehler() + 1);
 
-		// Wenn keine Token mehr vorhanden sind, wird abgebrochen
-		if (token == null || token.length == 0) {
+		// Wenn keine Token mehr vorhanden sind bzw. die maximal hinzuzufuegende Anzahl an Token ueberschritten wird, wird abgebrochen
+		if (token == null || token.length == 0 || maxLaenge==0) {
 			return knotenerstellt;
 		}
 

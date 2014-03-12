@@ -2,7 +2,6 @@ package de.mindlessbloom.suffixtree;
 
 import java.util.Arrays;
 
-import de.mindlessbloom.suffixtree.experiment01.KnotenKomparator;
 import edu.uci.ics.jung.graph.DelegateTree;
 
 
@@ -17,9 +16,9 @@ public class Test4 {
 				"^ mag Anna auch Thomas ? $"
 		};
 		
-		String[] eingabe2 = new String[]{"Erwin liebt Anna .",
+		/*String[] eingabe2 = new String[]{"Erwin liebt Anna .",
 				"Thomas liebt Anna auch .",
-				"liebt Anna auch Thomas ?"};
+				"liebt Anna auch Thomas ?"};*/
 		
 		BaumBauer b = new BaumBauer();
 		WortFilter wf = new WortFilter();
