@@ -41,6 +41,21 @@ public class BaumBauer {
      * @return Die Anzahl der neu erstellten Knoten
      */
 	public int baueBaum(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt) {
+		return this.baueBaum(token, rootnode, graph, umgekehrt, -1);
+	}
+	
+	/**
+     * Erzeugt einen Suffixbaum im uebergebenen Graphen ab dem uebergebenen
+     * Knoten anhand der uebergebenen Token. Inkrementiert die Zaehlvariable
+     * eines jeden Knotens um eins fuer jede "Beruehrung".
+     * @param token String-Array mit Token (Woerter, Buchstaben, Symbole, ... egal was)
+     * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
+     * @param graph Graph Darf null sein
+     * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
+     * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes (<0 = ignorieren)
+     * @return Die Anzahl der neu erstellten Knoten
+     */
+	public int baueBaum(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt, int maxLaenge) {
 		
 		// Zaehler fuer eingefuegte Knoten
 		int knotenEingefuegt = 0;
@@ -57,7 +72,7 @@ public class BaumBauer {
 			}
 			
 			// Naechsten Trie in Baum einfuegen
-			knotenEingefuegt += this.baueTrie(Arrays.copyOfRange(token, von, bis), rootnode, graph, umgekehrt);
+			knotenEingefuegt += this.baueTrie(Arrays.copyOfRange(token, von, bis), rootnode, graph, umgekehrt, maxLaenge);
 			
 		}
 		
@@ -89,13 +104,34 @@ public class BaumBauer {
      * @return Die Anzahl der neu erstellten Knoten
      */
     public int baueTrie(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt) {
+    	return this.baueTrie(token, rootnode, graph, umgekehrt, -1);
+    }
+	
+    /**
+     * Erzeugt einen Suffixtrie im uebergebenen Graphen ab dem uebergebenen
+     * Knoten anhand der uebergebenen Token. Inkrementiert die Zaehlvariable
+     * eines jeden Knotens um eins fuer jede "Beruehrung".
+     * @param token String-Array mit Token (Woerter, Buchstaben, Symbole, ... egal was)
+     * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
+     * @param graph Graph Darf null sein
+     * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
+     * @param maxLaenge Die maximale Anzahl an Token, die dem Trie hinzugefuegt werden soll (<0 = ignorieren).
+     * @return Die Anzahl der neu erstellten Knoten
+     */
+    public int baueTrie(String[] token, Knoten rootnode, Graph<Knoten, Kante> graph, boolean umgekehrt, int maxLaenge) {
 
     	// Variable zum Mitzaehlen der erstellten Knoten
 		int knotenerstellt = 0;
 		
+		// Bei Ueberschreitung der maximal hinzuzufuegenden Anzahl an Token wird abgebrochen
+		if (maxLaenge==0) {
+			return knotenerstellt;
+		}
+		
 		// "Beruehrung" des Knotens mitzaehlen
 		rootnode.setZaehler(rootnode.getZaehler() + 1);
 
+		// Wenn keine Token mehr vorhanden sind, wird abgebrochen
 		if (token == null || token.length == 0) {
 			return knotenerstellt;
 		}
@@ -141,12 +177,12 @@ public class BaumBauer {
 			// Rekursiver Aufruf mit Token 0 bis n-1
 			knotenerstellt += this.baueTrie(
 					Arrays.copyOfRange(token, 0, token.length - 1),
-					kindKnoten, graph, umgekehrt);
+					kindKnoten, graph, umgekehrt, maxLaenge-1);
 		} else {
 			// Rekursiver Aufruf mit Token 1 bis n
 			knotenerstellt += this.baueTrie(
 					Arrays.copyOfRange(token, 1, token.length),
-					kindKnoten, graph, umgekehrt);
+					kindKnoten, graph, umgekehrt, maxLaenge-1);
 		}
 
 		// Anzahl der neu erstellten Knoten zurueckgeben

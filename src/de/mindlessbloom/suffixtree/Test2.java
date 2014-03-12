@@ -140,12 +140,15 @@ public class Test2 {
 					// Meldung ausgeben
 					double prozentFertig = Math.ceil(((double)satzZaehler / (double)satzListe.size())*100);
 					if (satzZaehler % (satzListe.size()/20) == 0){
-						Logger.getLogger(Test2.class.getCanonicalName()).info("Parse "+satzListe.size()+" Korpusdateien : "+prozentFertig+"%");// Speicherinfo ausgeben
+						Logger.getLogger(Test2.class.getCanonicalName()).info("Fuege "+satzListe.size()+" Saetze zu Suffixbaum hinzu : "+prozentFertig+"%");// Speicherinfo ausgeben
 						Logger.getLogger(Test2.class.getCanonicalName()).info("Belegter Hauptspeicher: "+ (rt.totalMemory() - rt.freeMemory()));
 					}
 					
 					List<String> satz = saetze.next();
-					baumBauer.baueBaum(satz.toArray(new String[satz.size()]), wurzel, null, false);
+					baumBauer.baueBaum(satz.toArray(new String[satz.size()]), wurzel, null, false, 5);
+					
+					// Speicher freigeben
+					satz = null;
 				}
 				
 				// Meldung ausgeben
