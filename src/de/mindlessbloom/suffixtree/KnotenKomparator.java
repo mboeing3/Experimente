@@ -370,6 +370,34 @@ public class KnotenKomparator {
 	}
 	
 	/**
+	 * Gibt einen Baum zurueck, der nur aus den Trefferknoten des Eingabebaumes besteht (ab der ersten Kindebene).
+	 * @param k
+	 * @return Wurzelknoten des Trefferbaumes
+	 */
+	public Knoten trefferBaum(Knoten k) {
+		
+		// Knoten kopieren
+		Knoten neuerKnoten = new Knoten();
+		neuerKnoten.setName(k.getName());
+		neuerKnoten.setZaehler(k.getZaehler());
+		neuerKnoten.setMatch(k.isMatch());
+		
+		// Kindknoten durchlaufen
+		Iterator<Knoten> kinder = k.getKinder().values().iterator();
+		while(kinder.hasNext()){
+			Knoten kind = kinder.next();
+			if (kind.isMatch()){
+				Knoten neuesKind = this.trefferBaum(kind);
+				neuerKnoten.getKinder().put(neuesKind.getName(), neuesKind);
+			}
+		}
+		
+		// Neuen Knoten zurueckgeben
+		return neuerKnoten;
+		
+	}
+	
+	/**
 	 * Kompaktiert den uebergebenen Graphen/Baum, indem die Kinder der Knoten, die den uebergebenen Worten entsprechen, auf die Kinder des Wurzelknotens verwiesen werden. Nur sinnvoll bei Vergleichsbaeumen.  
 	 * @param graph
 	 * @param wurzel

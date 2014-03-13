@@ -96,8 +96,6 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 			Double[] trefferWert = this.komparator.ermittleKnotenTrefferwert(kombinationsBaumWurzel);
 			Double vergleichswert =  new Double(trefferWert[0] / trefferWert[1]);
 			
-			
-			
 			// Ergebnis auswerten
 			if (vergleichswert > besterVergleichswert){
 				besterVergleichswert = vergleichswert;
@@ -114,6 +112,11 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 		
 		// Ansonsten werden entsprechende MetaKnoten geschaffen und als Kombination zurueckgegeben
 		else {
+			
+			// Ggf. Vergleichsbaum auf Trefferknoten beschraenken
+			if (this.behalteNurTreffer){
+				kombinationsBaumWurzel = this.komparator.trefferBaum(kombinationsBaumWurzel);
+			}
 			
 			// Metaknoten mit dem kombinierten Vergleichsbaum erstellen
 			MetaKnoten vergleichsbaumMetaKnoten = new MetaKnoten(kombinationsBaumWurzel);
