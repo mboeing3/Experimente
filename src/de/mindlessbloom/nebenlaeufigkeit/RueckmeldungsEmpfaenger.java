@@ -7,10 +7,10 @@ package de.mindlessbloom.nebenlaeufigkeit;
  */
 public interface RueckmeldungsEmpfaenger {
 
-	public void receiveCallback(Object ergebnis, RueckmeldeProzess prozess);
+	public void empfangeRueckmeldung(Object ergebnis, RueckmeldeProzess prozess);
 	
-	public void receiveCallback(Object ergebnis, RueckmeldeProzess prozess, boolean wiederholend);
+	public void empfangeRueckmeldung(Object ergebnis, RueckmeldeProzess prozess, boolean wiederholend);
 	
-	public void receiveException(Exception e);
+	public void empfangeAusnahme(Exception e);
 	
 }

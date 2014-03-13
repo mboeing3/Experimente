@@ -13,7 +13,7 @@ public abstract class Aktion {
 		super();
 	}
 
-	public void run(Object callbackValue) {
+	public void ausfuehren(Object prozessErgebnis) {
 	}
 
 }

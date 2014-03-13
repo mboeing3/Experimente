@@ -16,7 +16,7 @@ import de.mindlessbloom.suffixtree.KnotenKomparator;
  */
 public class KnotenPartnerProzessor implements RueckmeldeProzess {
 	
-	private RueckmeldungsEmpfaenger callbackReceiver;
+	private RueckmeldungsEmpfaenger rueckmeldungsEmpfaenger;
 	private MetaKnoten einsamerKnoten;
 	private Collection<MetaKnoten> partnerPool;
 	private KnotenKomparator komparator;
@@ -24,11 +24,11 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 	// Zeigt an, ob im Kombinationsbaum nur die Trefferknoten enthalten sein sollen
 	private boolean behalteNurTreffer;
 
-	public KnotenPartnerProzessor(RueckmeldungsEmpfaenger callbackReceiver,
+	public KnotenPartnerProzessor(RueckmeldungsEmpfaenger rueckmeldungsEmpfaenger,
 			MetaKnoten einsamerKnoten, Collection<MetaKnoten> partnerPool,
 			KnotenKomparator komparator, boolean behalteNurTreffer) {
 		super();
-		this.callbackReceiver = callbackReceiver;
+		this.rueckmeldungsEmpfaenger = rueckmeldungsEmpfaenger;
 		this.einsamerKnoten = einsamerKnoten;
 		this.partnerPool = partnerPool;
 		this.komparator = komparator;
@@ -109,7 +109,7 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 		// Null zurueckgeben, wenn GAR KEINE Uebereinstimmung gefunden wurde (hypothetisch)
 		if (besterPartner == null){
 			// Ergebnis an RueckmeldungsEmpfaenger zurueckgeben
-			this.callbackReceiver.receiveCallback(null, this);
+			this.rueckmeldungsEmpfaenger.empfangeRueckmeldung(null, this);
 		}
 		
 		// Ansonsten werden entsprechende MetaKnoten geschaffen und als Kombination zurueckgegeben
@@ -122,19 +122,19 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 			vergleichsbaumMetaKnoten.setUebereinstimmungsQuotient(besterVergleichswert);
 			
 			// Ergebnis an RueckmeldungsEmpfaenger zurueckgeben
-			this.callbackReceiver.receiveCallback(vergleichsbaumMetaKnoten, this);
+			this.rueckmeldungsEmpfaenger.empfangeRueckmeldung(vergleichsbaumMetaKnoten, this);
 		}
 		
 	}
 
 	@Override
-	public RueckmeldungsEmpfaenger getCallbackReceiver() {
-		return this.callbackReceiver;
+	public RueckmeldungsEmpfaenger getRueckmeldungsEmpfaenger() {
+		return this.rueckmeldungsEmpfaenger;
 	}
 
 	@Override
-	public void setCallbackReceiver(RueckmeldungsEmpfaenger callbackReceiver) {
-		this.callbackReceiver = callbackReceiver;
+	public void setRueckmeldungsEmpfaenger(RueckmeldungsEmpfaenger rueckmeldungsEmpfaenger) {
+		this.rueckmeldungsEmpfaenger = rueckmeldungsEmpfaenger;
 	}
 
 
