@@ -1,10 +1,9 @@
 package de.mindlessbloom.suffixtree.experiment05;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import de.mindlessbloom.nebenlaeufigkeit.Aktion;
@@ -31,13 +30,13 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	private KnotenKomparator komparator = new KnotenKomparator();
 
 	// Liste fuer MetaKnoten der naechsten Ebene; wird von den Vergleichsprozessen befuellt
-	private List<MetaKnoten> metaKnotenPoolNaechsterEbene = new ArrayList<MetaKnoten>();
+	private ConcurrentHashMap<String, MetaKnoten> metaKnotenPoolNaechsterEbene = new ConcurrentHashMap<String, MetaKnoten>();
 
 	// Iterator fuer Metaknotenpool; wird von den Vergleichsprozessen benutzt
 	private Iterator<MetaKnoten> metaKnoten = null;
 
 	// Metaknotenliste
-	private List<MetaKnoten> metaKnotenPool = null;
+	private ConcurrentHashMap<String, MetaKnoten> metaKnotenPool = null;
 
 	// Nur Trefferknoten in Vergleichsbaeumen abbilden
 	private boolean behalteNurTreffer;
@@ -46,13 +45,13 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	private int gleichzeitigeProzesse = 4;
 	
 	// Variable fuer Ergebnis
-	private List<MetaKnoten> ergebnisListe = null;
+	private ConcurrentHashMap<String, MetaKnoten> ergebnisListe = null;
 
 	/*
 	 * Konstruktor
 	 */
 	public MetaBaumBauer(KnotenKomparator komparator,
-			List<MetaKnoten> metaKnotenPool, boolean behalteNurTreffer) {
+			ConcurrentHashMap<String, MetaKnoten> metaKnotenPool, boolean behalteNurTreffer) {
 		super();
 		this.komparator = komparator;
 		this.metaKnotenPool = metaKnotenPool;
@@ -70,11 +69,11 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 		this.komparator = komparator;
 	}
 
-	public List<MetaKnoten> getMetaKnotenPool() {
+	public ConcurrentHashMap<String, MetaKnoten> getMetaKnotenPool() {
 		return metaKnotenPool;
 	}
 
-	public void setMetaKnotenPool(List<MetaKnoten> metaKnotenPool) {
+	public void setMetaKnotenPool(ConcurrentHashMap<String, MetaKnoten> metaKnotenPool) {
 		this.metaKnotenPool = metaKnotenPool;
 	}
 
@@ -98,7 +97,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	 * Gibt den Ergebnisbaum des juengsten Aufrufs von baueBaum() zurueck.
 	 * @return
 	 */
-	public List<MetaKnoten> getErgebnisListe() {
+	public ConcurrentHashMap<String, MetaKnoten> getErgebnisListe() {
 		return ergebnisListe;
 	}
 
@@ -110,13 +109,13 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	 * Konstruiert neue Ebene von Metaknoten.
 	 * @return Liste der neuen Metaknoten
 	 */
-	public synchronized List<MetaKnoten> baueBaum() {
+	public ConcurrentHashMap<String, MetaKnoten> baueBaum() {
 		
 		// Ergebnisvariable loeschen
 		this.ergebnisListe = null;
 		
 		// Iterator fuer Metaknotenpool erstellen
-		this.metaKnoten = metaKnotenPool.iterator();
+		this.metaKnoten = metaKnotenPool.values().iterator();
 		
 		// Schleife ueber Anzahl der maximalen Parallelprozesse
 		for (int i=0; (i<gleichzeitigeProzesse && i<metaKnotenPool.size()); i++){
@@ -161,7 +160,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	}
 
 	@Override
-	public synchronized void empfangeRueckmeldung(Object ergebnis, RueckmeldeProzess prozess) {
+	public void empfangeRueckmeldung(Object ergebnis, RueckmeldeProzess prozess) {
 		
 		// Falls Ergebnis Null ist, abbrechen
 		if (ergebnis == null){

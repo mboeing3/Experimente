@@ -1,15 +1,15 @@
 package de.mindlessbloom.suffixtree.experiment05;
 
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import de.mindlessbloom.nebenlaeufigkeit.Aktion;
 
 public class KnotenPartnerProzessorRueckmeldeAktion extends Aktion {
 
-	private List<MetaKnoten> metaKnotenPoolNaechsterEbene;
+	private ConcurrentHashMap<String, MetaKnoten> metaKnotenPoolNaechsterEbene;
 	
-	public KnotenPartnerProzessorRueckmeldeAktion(List<MetaKnoten> metaKnotenPoolNaechsterEbene) {
+	public KnotenPartnerProzessorRueckmeldeAktion(ConcurrentHashMap<String, MetaKnoten> metaKnotenPoolNaechsterEbene) {
 		super();
 		this.metaKnotenPoolNaechsterEbene = metaKnotenPoolNaechsterEbene;
 	}
@@ -24,7 +24,7 @@ public class KnotenPartnerProzessorRueckmeldeAktion extends Aktion {
 		// Ergebnis auf MetaKnoten casten und zum Pool der naechsten Ebene hinzufuegen
 		else {
 			MetaKnoten mk = (MetaKnoten) prozessErgebnis;
-			metaKnotenPoolNaechsterEbene.add(mk);
+			metaKnotenPoolNaechsterEbene.put(mk.getKnoten().getName(),mk);
 			// Meldung ausgeben
 			Logger.getLogger(this.getClass().getSimpleName()).info("MetaKnoten \""+mk.getKnoten().getName()+"\" hinzugefuegt.");
 		}

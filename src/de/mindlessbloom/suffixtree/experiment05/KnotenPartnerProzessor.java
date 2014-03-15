@@ -1,10 +1,10 @@
 package de.mindlessbloom.suffixtree.experiment05;
 
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
-import de.mindlessbloom.nebenlaeufigkeit.RueckmeldungsEmpfaenger;
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldeProzess;
+import de.mindlessbloom.nebenlaeufigkeit.RueckmeldungsEmpfaenger;
 import de.mindlessbloom.suffixtree.Knoten;
 import de.mindlessbloom.suffixtree.KnotenKomparator;
 
@@ -18,14 +18,14 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 	
 	private RueckmeldungsEmpfaenger rueckmeldungsEmpfaenger;
 	private MetaKnoten einsamerKnoten;
-	private Collection<MetaKnoten> partnerPool;
+	private ConcurrentHashMap<String, MetaKnoten> partnerPool;
 	private KnotenKomparator komparator;
 	
 	// Zeigt an, ob im Kombinationsbaum nur die Trefferknoten enthalten sein sollen
 	private boolean behalteNurTreffer;
 
 	public KnotenPartnerProzessor(RueckmeldungsEmpfaenger rueckmeldungsEmpfaenger,
-			MetaKnoten einsamerKnoten, Collection<MetaKnoten> partnerPool,
+			MetaKnoten einsamerKnoten, ConcurrentHashMap<String, MetaKnoten> partnerPool,
 			KnotenKomparator komparator, boolean behalteNurTreffer) {
 		super();
 		this.rueckmeldungsEmpfaenger = rueckmeldungsEmpfaenger;
@@ -43,11 +43,11 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 		this.einsamerKnoten = einsamerKnoten;
 	}
 
-	public Collection<MetaKnoten> getPartnerPool() {
+	public ConcurrentHashMap<String, MetaKnoten> getPartnerPool() {
 		return partnerPool;
 	}
 
-	public void setPartnerPool(Collection<MetaKnoten> partnerPool) {
+	public void setPartnerPool(ConcurrentHashMap<String, MetaKnoten> partnerPool) {
 		this.partnerPool = partnerPool;
 	}
 
@@ -82,7 +82,7 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 			Knoten besterKombinationsBaumWurzel = null;
 			
 			// Knoten des Partnerpools durchlaufen
-			Iterator<MetaKnoten> partnerKnoten = this.partnerPool.iterator();
+			Iterator<MetaKnoten> partnerKnoten = this.partnerPool.values().iterator();
 			while (partnerKnoten.hasNext()){
 				
 				// Aktuellen Knoten ermitteln

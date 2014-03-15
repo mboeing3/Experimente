@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
@@ -24,7 +25,7 @@ public class Start {
 	private KnotenKomparator komparator = new KnotenKomparator();
 	
 	// Metaknotenliste
-	private List<MetaKnoten> metaKnotenPool = null;
+	private ConcurrentHashMap<String, MetaKnoten> metaKnotenPool = null;
 	
 	// Anzahl der zu erstellenden Metaknotenbaum-Ebenen
 	private int metabaumEbenen = 2;
@@ -249,7 +250,7 @@ public class Start {
 		 */
 		
 		// Metaknotenliste
-		metaKnotenPool = new ArrayList<MetaKnoten>();
+		metaKnotenPool = new ConcurrentHashMap<String, MetaKnoten>();
 		
 		// Liste der Suffixbaumzweige durchlaufen
 		Iterator<Knoten> suffixBaumZweige = wurzel.getKinder().values().iterator();
@@ -262,7 +263,7 @@ public class Start {
 			MetaKnoten metaKnoten = new MetaKnoten(suffixBaumZweig);
 			
 			// Metaknoten in Liste eintragen
-			metaKnotenPool.add(metaKnoten);
+			metaKnotenPool.put(metaKnoten.getKnoten().getName(),metaKnoten);
 		}
 		
 		/*
@@ -272,7 +273,7 @@ public class Start {
 		// Metabaumbauer instanziieren
 		MetaBaumBauer metaBaumBauer = new MetaBaumBauer(komparator, metaKnotenPool, behalteNurTreffer); 
 		
-		List<MetaKnoten> ergebnisPool = null;
+		ConcurrentHashMap<String, MetaKnoten> ergebnisPool = null;
 		
 		// Schleife ueber Anzahl der zu erstellenden Metaknotenbaum-Ebenen
 		for (int i=0; i<this.metabaumEbenen; i++){
@@ -297,10 +298,10 @@ public class Start {
 	 * Zeigt uebergebene Metaknotenstruktur als Graphen
 	 * @param metaKnotenEbene
 	 */
-	private void zeigeErgebnisBaum(List<MetaKnoten> metaKnotenEbene, MetaBaumBauer metaBaumBauer){
+	private void zeigeErgebnisBaum(ConcurrentHashMap<String, MetaKnoten> metaKnotenEbene, MetaBaumBauer metaBaumBauer){
 		// Metaknotenliste unter einer Wurzel zusammenfassen
 		MetaKnoten wurzel = new MetaKnoten(new Knoten("Metaknotenstruktur"));
-		Iterator<MetaKnoten> kinder = metaKnotenEbene.iterator();
+		Iterator<MetaKnoten> kinder = metaKnotenEbene.values().iterator();
 		while(kinder.hasNext()){
 			wurzel.getKindMetaKnoten().add(kinder.next());
 		}
