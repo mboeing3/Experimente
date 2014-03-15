@@ -245,7 +245,7 @@ public class KnotenKomparator {
 			// Namen ggf. anhaengen
 			if (knoten1 != null
 					&& !(knoten1.getName().equals(knoten2.getName()))) {
-				ergebnisKnoten.setName(knoten1.getName() + "/"
+				ergebnisKnoten.setName(knoten1.getName() + " / "
 						+ knoten2.getName());
 			} else {
 				ergebnisKnoten.setName(knoten2.getName());

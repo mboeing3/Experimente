@@ -70,63 +70,72 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 	@Override
 	public void run() {
 		
-		// Variable fuer bisherig besten Vergleichswert
-		Double besterVergleichswert = 0d;
-		
-		// Variable fuer Bestpassendsten Knoten
-		MetaKnoten besterPartner = null;
-		
-		// Variable fuer Kombinationsbaum aus beiden Knoten
-		Knoten kombinationsBaumWurzel = null;
-		
-		// Knoten des Partnerpools durchlaufen
-		Iterator<MetaKnoten> partnerKnoten = this.partnerPool.iterator();
-		while (partnerKnoten.hasNext()){
+		try {
+
+			// Variable fuer bisherig besten Vergleichswert
+			Double besterVergleichswert = 0d;
 			
-			// Aktuellen Knoten ermitteln
-			MetaKnoten knoten = partnerKnoten.next();
+			// Variable fuer Bestpassendsten Knoten
+			MetaKnoten besterPartner = null;
 			
-			// Vergleich mit sich selbst ausschliessen
-			if (knoten.equals(this.einsamerKnoten)){
-				continue;
+			// Variable fuer Kombinationsbaum aus beiden Knoten
+			Knoten besterKombinationsBaumWurzel = null;
+			
+			// Knoten des Partnerpools durchlaufen
+			Iterator<MetaKnoten> partnerKnoten = this.partnerPool.iterator();
+			while (partnerKnoten.hasNext()){
+				
+				// Aktuellen Knoten ermitteln
+				MetaKnoten knoten = partnerKnoten.next();
+				
+				// Vergleich mit sich selbst ausschliessen
+				if (knoten.equals(this.einsamerKnoten)){
+					continue;
+				}
+				
+				// Baeume miteinander kombinieren
+				Knoten kombinationsBaumWurzel = this.komparator.verschmelzeBaeume(einsamerKnoten.getKnoten(), knoten.getKnoten());
+				Double[] trefferWert = this.komparator.ermittleKnotenTrefferwert(kombinationsBaumWurzel);
+				Double vergleichswert =  new Double(trefferWert[0] / trefferWert[1]);
+				
+				// Ergebnis auswerten
+				if (vergleichswert > besterVergleichswert){
+					besterVergleichswert = vergleichswert;
+					besterPartner = knoten;
+					besterPartner.setUebereinstimmungsQuotient(vergleichswert);
+					besterKombinationsBaumWurzel = kombinationsBaumWurzel;
+				}
+				
 			}
 			
-			// Baeume miteinander kombinieren
-			kombinationsBaumWurzel = this.komparator.verschmelzeBaeume(einsamerKnoten.getKnoten(), knoten.getKnoten());
-			Double[] trefferWert = this.komparator.ermittleKnotenTrefferwert(kombinationsBaumWurzel);
-			Double vergleichswert =  new Double(trefferWert[0] / trefferWert[1]);
-			
-			// Ergebnis auswerten
-			if (vergleichswert > besterVergleichswert){
-				besterVergleichswert = vergleichswert;
-				besterPartner = knoten;
+			// Den einsamen Knoten zurueckgeben, wenn GAR KEINE Uebereinstimmung gefunden wurde
+			if (besterPartner == null){
+				// Ergebnis an RueckmeldungsEmpfaenger zurueckgeben
+				this.rueckmeldungsEmpfaenger.empfangeRueckmeldung(this.einsamerKnoten, this);
 			}
 			
-		}
-		
-		// Null zurueckgeben, wenn GAR KEINE Uebereinstimmung gefunden wurde (hypothetisch)
-		if (besterPartner == null){
-			// Ergebnis an RueckmeldungsEmpfaenger zurueckgeben
-			this.rueckmeldungsEmpfaenger.empfangeRueckmeldung(null, this);
-		}
-		
-		// Ansonsten werden entsprechende MetaKnoten geschaffen und als Kombination zurueckgegeben
-		else {
-			
-			// Ggf. Vergleichsbaum auf Trefferknoten beschraenken
-			if (this.behalteNurTreffer){
-				kombinationsBaumWurzel = this.komparator.trefferBaum(kombinationsBaumWurzel);
+			// Ansonsten werden entsprechende MetaKnoten geschaffen und als Kombination zurueckgegeben
+			else {
+				
+				// Ggf. Vergleichsbaum auf Trefferknoten beschraenken
+				if (this.behalteNurTreffer){
+					besterKombinationsBaumWurzel = this.komparator.trefferBaum(besterKombinationsBaumWurzel);
+				}
+				
+				// Metaknoten mit dem kombinierten Vergleichsbaum erstellen
+				MetaKnoten vergleichsbaumMetaKnoten = new MetaKnoten(besterKombinationsBaumWurzel);
+				vergleichsbaumMetaKnoten.getKindMetaKnoten().add(this.einsamerKnoten);
+				vergleichsbaumMetaKnoten.getKindMetaKnoten().add(besterPartner);
+				vergleichsbaumMetaKnoten.setUebereinstimmungsQuotient(besterVergleichswert);
+				
+				// Ergebnis an RueckmeldungsEmpfaenger zurueckgeben
+				this.rueckmeldungsEmpfaenger.empfangeRueckmeldung(vergleichsbaumMetaKnoten, this);
 			}
 			
-			// Metaknoten mit dem kombinierten Vergleichsbaum erstellen
-			MetaKnoten vergleichsbaumMetaKnoten = new MetaKnoten(kombinationsBaumWurzel);
-			vergleichsbaumMetaKnoten.getKindMetaKnoten().add(this.einsamerKnoten);
-			vergleichsbaumMetaKnoten.getKindMetaKnoten().add(besterPartner);
-			vergleichsbaumMetaKnoten.setUebereinstimmungsQuotient(besterVergleichswert);
-			
-			// Ergebnis an RueckmeldungsEmpfaenger zurueckgeben
-			this.rueckmeldungsEmpfaenger.empfangeRueckmeldung(vergleichsbaumMetaKnoten, this);
+		} catch (Exception e){
+			this.rueckmeldungsEmpfaenger.empfangeAusnahme(e);
 		}
+		
 		
 	}
 

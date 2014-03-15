@@ -13,7 +13,13 @@ public class Knoten {
 		super();
 		this.zaehler = 0;
 		this.kinder = new HashMap<String,Knoten>();
-		
+	}
+	
+	public Knoten(String name) {
+		super();
+		this.zaehler = 0;
+		this.kinder = new HashMap<String,Knoten>();
+		this.name = name;
 	}
 
 	public int getZaehler() {
