@@ -207,7 +207,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 			} else {
 				// Keine Knoten mehr verbleibend - pruefen, ob noch Prozesse laufen, oder die Bearbeitung der aktuellen Beumebene (bzw. des aktuellen Metaknotenpools) abgeschlossen ist.
 				
-				if (this.rueckmeldeAktionen.size() == 1){
+				if (this.rueckmeldeAktionen.size() <= 1){
 					// Meldung ausgeben
 					Logger.getLogger(Start.class.getCanonicalName()).info("Bearbeitung des aktuellen Pools abgeschlossen. Der neue Pool hat "+this.metaKnotenPoolNaechsterEbene.size()+" Elemente.");
 					

@@ -245,8 +245,15 @@ public class KnotenKomparator {
 			// Namen ggf. anhaengen
 			if (knoten1 != null
 					&& !(knoten1.getName().equals(knoten2.getName()))) {
-				ergebnisKnoten.setName(knoten1.getName() + " / "
-						+ knoten2.getName());
+				
+				// Namen der Knoten in lexikographischer Reihenfolge abbilden
+				String neuerKnotenName;
+				if (knoten1.getName().compareTo(knoten2.getName())<0){
+					neuerKnotenName = knoten1.getName() + " / " + knoten2.getName();
+				} else {
+					neuerKnotenName = knoten2.getName() + " / " + knoten1.getName();
+				}
+				ergebnisKnoten.setName(neuerKnotenName);
 			} else {
 				ergebnisKnoten.setName(knoten2.getName());
 			}
