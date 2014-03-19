@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.experiment01_03;
 
 public class Kante {
 	

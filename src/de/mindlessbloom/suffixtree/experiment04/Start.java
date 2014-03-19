@@ -11,12 +11,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 
-import de.mindlessbloom.suffixtree.BaumBauer;
-import de.mindlessbloom.suffixtree.GraphenPlotter;
-import de.mindlessbloom.suffixtree.Knoten;
-import de.mindlessbloom.suffixtree.KnotenKomparator;
-import de.mindlessbloom.suffixtree.OANC;
-import de.mindlessbloom.suffixtree.OANCXMLParser;
+import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
+import de.mindlessbloom.suffixtree.junggraph.GraphenPlotter;
+import de.mindlessbloom.suffixtree.oanc.OANC;
+import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
 
 
 public class Start {

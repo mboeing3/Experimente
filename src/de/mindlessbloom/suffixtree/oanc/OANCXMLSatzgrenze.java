@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.oanc;
 
 /**
  * Beinhaltet Satzgrenzeninformation (OANC)

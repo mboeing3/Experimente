@@ -1,9 +1,10 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.experiment01_03;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import de.mindlessbloom.suffixtree.junggraph.GraphenPlotter;
 import edu.uci.ics.jung.graph.DelegateTree;
 
 /**

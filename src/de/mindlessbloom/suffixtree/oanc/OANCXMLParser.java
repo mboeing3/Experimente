@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.oanc;
 
 import java.io.File;
 import java.io.FileInputStream;

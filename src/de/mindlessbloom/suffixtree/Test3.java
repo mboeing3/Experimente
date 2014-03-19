@@ -9,6 +9,9 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 
+import de.mindlessbloom.suffixtree.oanc.OANC;
+import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
+
 
 public class Test3 {
 

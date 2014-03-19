@@ -1,9 +1,12 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.oanc;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.mindlessbloom.suffixtree.hilfsmittel.RegAusdruckDateiFilter;
+import de.mindlessbloom.suffixtree.hilfsmittel.VerzeichnisFilter;
 
 /**
  * Gibt zentralen Zugriff auf die lokal gespeicherten Daten des OANC

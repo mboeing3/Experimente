@@ -1,5 +1,9 @@
 package de.mindlessbloom.suffixtree;
 
+import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
+import de.mindlessbloom.suffixtree.experiment01_03.Kante;
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
 import edu.uci.ics.jung.graph.DelegateTree;
 
 

@@ -1,10 +1,12 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.junggraph;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 
 import org.apache.commons.collections15.Transformer;
+
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
 
 public class GewichtGroesseTransformer implements Transformer<Knoten,Shape> {
 	

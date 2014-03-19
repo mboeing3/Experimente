@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.junggraph;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 
 import org.apache.commons.collections15.Transformer;
 
+import de.mindlessbloom.suffixtree.experiment01_03.Kante;
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
 import edu.uci.ics.jung.algorithms.layout.BalloonLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;

@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.experiment01_03;
 
 import java.util.ArrayList;
 import java.util.Iterator;

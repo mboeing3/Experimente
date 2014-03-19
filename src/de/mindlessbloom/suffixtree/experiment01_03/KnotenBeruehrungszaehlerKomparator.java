@@ -1,8 +1,8 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.experiment01_03;
 
 import java.util.Comparator;
 
-public class KnotenDurchlaufZaehlerKomparator implements Comparator<Knoten> {
+public class KnotenBeruehrungszaehlerKomparator implements Comparator<Knoten> {
 
 	@Override
 	public int compare(Knoten o1, Knoten o2) {

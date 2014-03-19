@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.oanc;
 
 import static org.junit.Assert.*;
 

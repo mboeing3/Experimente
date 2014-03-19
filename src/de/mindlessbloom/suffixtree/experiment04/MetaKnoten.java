@@ -3,7 +3,7 @@ package de.mindlessbloom.suffixtree.experiment04;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mindlessbloom.suffixtree.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
 
 public class MetaKnoten {
 	

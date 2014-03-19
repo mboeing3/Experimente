@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 import de.mindlessbloom.nebenlaeufigkeit.Aktion;
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldeProzess;
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldungsEmpfaenger;
-import de.mindlessbloom.suffixtree.Knoten;
-import de.mindlessbloom.suffixtree.KnotenKomparator;
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
 
 /**
  * Stellt Methoden zur Erstellung und Manipulation von Metabaeumen bereit.

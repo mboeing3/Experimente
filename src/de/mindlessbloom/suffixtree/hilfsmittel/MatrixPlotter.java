@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.hilfsmittel;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;

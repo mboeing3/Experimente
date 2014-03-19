@@ -5,8 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldeProzess;
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldungsEmpfaenger;
-import de.mindlessbloom.suffixtree.Knoten;
-import de.mindlessbloom.suffixtree.KnotenKomparator;
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
 
 /**
  * Ermittelt den am besten passendsten (Meta)Knoten aus einem Pool und gibt

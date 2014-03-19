@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree;
+package de.mindlessbloom.suffixtree.oanc;
 
 import java.util.ArrayList;
 import java.util.List;

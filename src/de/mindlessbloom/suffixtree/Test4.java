@@ -2,6 +2,11 @@ package de.mindlessbloom.suffixtree;
 
 import java.util.Arrays;
 
+import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
+import de.mindlessbloom.suffixtree.experiment01_03.Kante;
+import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_03.WortFilter;
+import de.mindlessbloom.suffixtree.junggraph.GraphenPlotter;
 import edu.uci.ics.jung.graph.DelegateTree;
 
 
