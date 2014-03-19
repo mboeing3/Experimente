@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment05;
+package de.mindlessbloom.suffixtree.experiment04;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -42,7 +42,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	private boolean behalteNurTreffer;
 	
 	// Gleichzeitig auszufuehrende Prozesse
-	private int gleichzeitigeProzesse = 4;
+	private int gleichzeitigeProzesse = 1;
 	
 	// Variable fuer Ergebnis
 	private ConcurrentHashMap<String, MetaKnoten> ergebnisListe = null;
@@ -51,11 +51,12 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	 * Konstruktor
 	 */
 	public MetaBaumBauer(KnotenKomparator komparator,
-			ConcurrentHashMap<String, MetaKnoten> metaKnotenPool, boolean behalteNurTreffer) {
+			ConcurrentHashMap<String, MetaKnoten> metaKnotenPool, boolean behalteNurTreffer, int gleichzeitigeProzesse) {
 		super();
 		this.komparator = komparator;
 		this.metaKnotenPool = metaKnotenPool;
 		this.behalteNurTreffer = behalteNurTreffer;
+		this.gleichzeitigeProzesse = gleichzeitigeProzesse;
 	}
 
 	/*

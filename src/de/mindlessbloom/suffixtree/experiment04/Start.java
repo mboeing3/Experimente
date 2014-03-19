@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment05;
+package de.mindlessbloom.suffixtree.experiment04;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -271,7 +271,7 @@ public class Start {
 		 */
 		
 		// Metabaumbauer instanziieren
-		MetaBaumBauer metaBaumBauer = new MetaBaumBauer(komparator, metaKnotenPool, behalteNurTreffer); 
+		MetaBaumBauer metaBaumBauer = new MetaBaumBauer(komparator, metaKnotenPool, behalteNurTreffer, gleichzeitigeProzesse); 
 		
 		ConcurrentHashMap<String, MetaKnoten> ergebnisPool = null;
 		

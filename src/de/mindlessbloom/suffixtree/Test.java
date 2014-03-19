@@ -42,12 +42,13 @@ public class Test {
 		
 		System.out.println("Treffer: "+trefferWert[0] +"/"+ trefferWert[1] +" ("+d+").");
 		
-		GraphenPlotter g = new GraphenPlotter();
+		/*GraphenPlotter g = new GraphenPlotter();
 		
 		g.plot(b.konstruiereGraph(wurzel), 2);
 		g.plot(b.konstruiereGraph(wurzel2), 2);
 		g.plot(b.konstruiereGraph(vergleichsbaum), 2);
-
+*/
+		b.konstruiereUbiGraph(vergleichsbaum);
 	}
 
 }

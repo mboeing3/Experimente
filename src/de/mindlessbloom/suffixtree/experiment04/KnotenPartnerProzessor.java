@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment05;
+package de.mindlessbloom.suffixtree.experiment04;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;

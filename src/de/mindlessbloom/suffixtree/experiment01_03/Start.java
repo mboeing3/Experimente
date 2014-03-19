@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment03;
+package de.mindlessbloom.suffixtree.experiment01_03;
 
 import java.io.File;
 import java.text.DecimalFormat;
