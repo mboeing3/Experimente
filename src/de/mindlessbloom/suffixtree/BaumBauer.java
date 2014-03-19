@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import de.mindlessbloom.suffixtree.experiment03.Start;
+import org.ubiety.ubigraph.UbigraphClient;
+
 import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.EdgeType;
@@ -273,6 +274,48 @@ public class BaumBauer {
 	}
 	
 	/**
+	 * Gibt einen UbiGraphen mit dem uebergebenen Baum zurueck
+	 * 
+	 * @param knoten
+	 * @return
+	 */
+	public UbigraphClient konstruiereUbiGraph(Knoten knoten) {
+
+		return this.konstruiereUbiGraph(knoten, null, 0);
+		
+	}
+
+	/**
+	 * Gibt einen UbiGraphen mit dem uebergebenen Baum zurueck
+	 * 
+	 * @param knoten
+	 * @param graph
+	 * @return
+	 */
+	private UbigraphClient konstruiereUbiGraph(Knoten knoten,
+			UbigraphClient graph, int vaterKnotenId) {
+
+		if (graph == null) {
+			graph = new UbigraphClient();
+			graph.newVertex(0);
+			graph.setVertexAttribute(0, "label", knoten.getName());
+			vaterKnotenId = 0;
+		}
+
+		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			Knoten kind = knoten.getKinder().get(kinder.next());
+			int neuerKnotenId = graph.newVertex();
+			graph.setVertexAttribute(neuerKnotenId, "label", kind.getName());
+			int neueKanteId = graph.newEdge(vaterKnotenId, neuerKnotenId);
+			graph.setEdgeAttribute(neueKanteId, "oriented", "true");
+			konstruiereUbiGraph(kind, graph, neuerKnotenId);
+		}
+
+		return graph;
+	}
+	
+	/**
 	 * @deprecated
 	 * Filtert eine Satzliste (Liste einer Liste von Strings) anhand eines Wortfilters und erstellt im uebergebenen Graphen einen Baum.
 	 * @param wortTyp
@@ -346,7 +389,7 @@ public class BaumBauer {
 			if ((satzListe.size() / 20) != 0
 					&& saetzeDurchlaufen % (satzListe.size() / 20) == 0) {
 				Logger.getLogger(
-						Start.class.getCanonicalName())
+						BaumBauer.class.getCanonicalName())
 						.info("Ermittle Saetze, die Wort '" + wortTyp
 								+ "' beinhalten: " + saetzeDurchlaufen + "/"
 								+ satzListe.size() + " (" + saetzeGefunden
@@ -434,7 +477,7 @@ public class BaumBauer {
 				if ((satzListe.size() / 20) != 0
 						&& saetzeDurchlaufen % (satzListe.size() / 20) == 0) {
 					Logger.getLogger(
-							Start.class.getCanonicalName())
+							BaumBauer.class.getCanonicalName())
 							.info("Ermittle Saetze, die Wort '" + wortTyp
 									+ "' beinhalten: " + saetzeDurchlaufen + "/"
 									+ satzListe.size() + " (" + saetzeGefunden
