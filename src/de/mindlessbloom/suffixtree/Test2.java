@@ -164,10 +164,12 @@ public class Test2 {
 				
 				// Speicherinfo ausgeben
 				Logger.getLogger(Test2.class.getCanonicalName()).info("Suffixbaumgroesse: "+ wurzel.getZaehler());
+				Logger.getLogger(Test2.class.getCanonicalName()).info("Anzahl Zweige: "+ wurzel.getKinder().size());
 				
 				// Exemplarisch einen Zweig als Graphik ausgeben
 				//GraphenPlotter g = new GraphenPlotter();
 				//g.plot(baumBauer.konstruiereGraph(wurzel.getKinder().get("walking")));
+				//baumBauer.konstruiereUbiGraph(wurzel.getKinder().get("walking"));
 				baumBauer.konstruiereUbiGraph(wurzel.getKinder().get("walking"));
 
 	}

@@ -94,7 +94,7 @@ public class Start {
 		// Ggf. Hilfetext anzeigen
 		if(kommandozeile.hasOption("h")) {
 			HelpFormatter lvFormater = new HelpFormatter();
-			lvFormater.printHelp("java [-d64 -Xms7500m -Xmx7500m] -jar Experiment.jar <Optionen>", optionen);
+			lvFormater.printHelp("java [-d64 -Xms7500m -Xmx7500m] -jar Experiment1-3.jar <Optionen>", optionen);
 			System.exit(0);
 		}
 		

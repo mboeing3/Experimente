@@ -4,12 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.ubiety.ubigraph.UbigraphClient;
 
 import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
 import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
@@ -25,7 +26,7 @@ public class Start {
 	private KnotenKomparator komparator = new KnotenKomparator();
 	
 	// Metaknotenliste
-	private ConcurrentHashMap<String, MetaKnoten> metaKnotenPool = null;
+	private ArrayList<MetaKnoten> metaKnotenPool = null;
 	
 	// Anzahl der zu erstellenden Metaknotenbaum-Ebenen
 	private int metabaumEbenen = 2;
@@ -47,13 +48,16 @@ public class Start {
 		optionen.addOption("m", true, "Maximale Tiefe der erstellten Baeume (inkl. Wurzel). <0 = ignorieren (Standard)");
 		
 		// Option fuer Programmausfuehrung hinzufuegen
-		optionen.addOption("p", true, "Anzahl der gleichzeitig auszufuehrenden Prozesse (Standard: 1)");
+		optionen.addOption("p", true, "Anzahl der gleichzeitig auszufuehrenden Prozesse (Standard: 4)");
 		
 		// Option fuer Vergleiche hinzufuegen
 		optionen.addOption("t", false, "Nur Trefferknoten als Vergleichsbaeume verwenden.");
 		
 		// Option fuer Metabaumkonstruktion hinzufuegen
-		optionen.addOption("e", true, "Anzahl der zu erstellenden Metaknotenbaum-Ebenen (min. 1, Standard 2).");
+		optionen.addOption("e", true, "Anzahl der zu erstellenden Metaknotenbaum-Ebenen (min. 1, Standard 4).");
+		
+		// Option fuer Hilfstext anzeigen
+		optionen.addOption("h", false, "Gibt Information zur Benutzung des Programms aus.");
 		
 		/**
 		 * Kommandozeilenoptionen auswerten
@@ -62,6 +66,13 @@ public class Start {
 		// Parser fuer Kommandozeilenoptionen
 		CommandLineParser parser = new org.apache.commons.cli.PosixParser();
 		CommandLine kommandozeile = parser.parse( optionen, args);
+		
+		// Ggf. Hilfetext anzeigen
+		if (kommandozeile.hasOption("h")) {
+			HelpFormatter lvFormater = new HelpFormatter();
+			lvFormater.printHelp("java [-d64 -Xms7500m -Xmx7500m] -jar Experiment4.jar <Optionen>", optionen);
+			System.exit(0);
+		}
 		
 		// Pfade zum OANC.
 		//String[] oancSpeicherorte = new String[]{"/Users/marcel/Downloads/OANC/data/written_1/","/Users/marcel/Downloads/OANC/data/written_2/"};
@@ -77,7 +88,7 @@ public class Start {
 		}
 		
 		// Anzahl gleichzeitiger Prozesse
-		int gleichzeitigeProzesse = 1;
+		int gleichzeitigeProzesse = 4;
 		if(kommandozeile.hasOption("p")) {
 			if (Integer.parseInt(kommandozeile.getOptionValue("p")) > 0)
 			gleichzeitigeProzesse = Integer.parseInt(kommandozeile.getOptionValue("p"));
@@ -250,7 +261,7 @@ public class Start {
 		 */
 		
 		// Metaknotenliste
-		metaKnotenPool = new ConcurrentHashMap<String, MetaKnoten>();
+		metaKnotenPool = new ArrayList<MetaKnoten>();
 		
 		// Liste der Suffixbaumzweige durchlaufen
 		Iterator<Knoten> suffixBaumZweige = wurzel.getKinder().values().iterator();
@@ -263,7 +274,7 @@ public class Start {
 			MetaKnoten metaKnoten = new MetaKnoten(suffixBaumZweig);
 			
 			// Metaknoten in Liste eintragen
-			metaKnotenPool.put(metaKnoten.getKnoten().getName(),metaKnoten);
+			metaKnotenPool.add(metaKnoten);
 		}
 		
 		/*
@@ -273,7 +284,7 @@ public class Start {
 		// Metabaumbauer instanziieren
 		MetaBaumBauer metaBaumBauer = new MetaBaumBauer(komparator, metaKnotenPool, behalteNurTreffer, gleichzeitigeProzesse); 
 		
-		ConcurrentHashMap<String, MetaKnoten> ergebnisPool = null;
+		List<MetaKnoten> ergebnisPool = null;
 		
 		// Schleife ueber Anzahl der zu erstellenden Metaknotenbaum-Ebenen
 		for (int i=0; i<this.metabaumEbenen; i++){
@@ -298,10 +309,10 @@ public class Start {
 	 * Zeigt uebergebene Metaknotenstruktur als Graphen
 	 * @param metaKnotenEbene
 	 */
-	private void zeigeErgebnisBaum(ConcurrentHashMap<String, MetaKnoten> metaKnotenEbene, MetaBaumBauer metaBaumBauer){
+	private void zeigeErgebnisBaum(List<MetaKnoten> metaKnotenEbene, MetaBaumBauer metaBaumBauer){
 		// Metaknotenliste unter einer Wurzel zusammenfassen
 		MetaKnoten wurzel = new MetaKnoten(new Knoten("Metaknotenstruktur"));
-		Iterator<MetaKnoten> kinder = metaKnotenEbene.values().iterator();
+		Iterator<MetaKnoten> kinder = metaKnotenEbene.iterator();
 		while(kinder.hasNext()){
 			wurzel.getKindMetaKnoten().add(kinder.next());
 		}
@@ -317,13 +328,21 @@ public class Start {
 		// Liste als Kinder eines Baumes abbilden
 		Knoten wurzel = metaBaumBauer.konvertiereMetaKnotenZuKnoten(metaKnotenBaumWurzel);
 		
-		// Baumbauer instanziieren
-		BaumBauer baumBauer = new BaumBauer();
-		
-		// Graphenplotter instanziieren
-		GraphenPlotter g = new GraphenPlotter();
-		g.plot(baumBauer.konstruiereGraph(wurzel));
-		
+		if (wurzel == null){
+			Logger.getLogger(Start.class.getCanonicalName()).warning("Knoten ist null, kann nicht abgebildet werden.");
+		} else {
+			// Baumbauer instanziieren
+			BaumBauer baumBauer = new BaumBauer();
+			
+			// Graphenplotter instanziieren
+			GraphenPlotter g = new GraphenPlotter();
+			g.plot(baumBauer.konstruiereGraph(wurzel));
+			
+			//UbigraphClient ugraph = new UbigraphClient("http://192.168.99.52:20738/RPC2");
+
+			//ugraph.clear();
+			//baumBauer.konstruiereUbiGraph(wurzel, ugraph);
+		}
 	}
 
 }

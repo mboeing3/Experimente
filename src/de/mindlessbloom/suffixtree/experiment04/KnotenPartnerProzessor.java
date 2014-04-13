@@ -1,7 +1,7 @@
 package de.mindlessbloom.suffixtree.experiment04;
 
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldeProzess;
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldungsEmpfaenger;
@@ -18,14 +18,14 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 	
 	private RueckmeldungsEmpfaenger rueckmeldungsEmpfaenger;
 	private MetaKnoten einsamerKnoten;
-	private ConcurrentHashMap<String, MetaKnoten> partnerPool;
+	private List<MetaKnoten> partnerPool;
 	private KnotenKomparator komparator;
 	
 	// Zeigt an, ob im Kombinationsbaum nur die Trefferknoten enthalten sein sollen
 	private boolean behalteNurTreffer;
 
 	public KnotenPartnerProzessor(RueckmeldungsEmpfaenger rueckmeldungsEmpfaenger,
-			MetaKnoten einsamerKnoten, ConcurrentHashMap<String, MetaKnoten> partnerPool,
+			MetaKnoten einsamerKnoten, List<MetaKnoten> partnerPool,
 			KnotenKomparator komparator, boolean behalteNurTreffer) {
 		super();
 		this.rueckmeldungsEmpfaenger = rueckmeldungsEmpfaenger;
@@ -43,11 +43,11 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 		this.einsamerKnoten = einsamerKnoten;
 	}
 
-	public ConcurrentHashMap<String, MetaKnoten> getPartnerPool() {
+	public List<MetaKnoten> getPartnerPool() {
 		return partnerPool;
 	}
 
-	public void setPartnerPool(ConcurrentHashMap<String, MetaKnoten> partnerPool) {
+	public void setPartnerPool(ArrayList<MetaKnoten> partnerPool) {
 		this.partnerPool = partnerPool;
 	}
 
@@ -81,15 +81,27 @@ public class KnotenPartnerProzessor implements RueckmeldeProzess {
 			// Variable fuer Kombinationsbaum aus beiden Knoten
 			Knoten besterKombinationsBaumWurzel = null;
 			
+			// Groesse des Partnerpools ermitteln
+			int partnerPoolGroesse;
+			synchronized(this){
+				partnerPoolGroesse = this.partnerPool.size();
+			}
+			
 			// Knoten des Partnerpools durchlaufen
-			Iterator<MetaKnoten> partnerKnoten = this.partnerPool.values().iterator();
-			while (partnerKnoten.hasNext()){
+			for (int i=0; i<partnerPoolGroesse; i++){
 				
 				// Aktuellen Knoten ermitteln
-				MetaKnoten knoten = partnerKnoten.next();
+				MetaKnoten knoten = null;
+				synchronized(this){
+					try{
+						knoten = this.partnerPool.get(i);
+					} catch (Exception e){
+						e.printStackTrace();
+					}
+				}
 				
-				// Vergleich mit sich selbst ausschliessen
-				if (knoten.equals(this.einsamerKnoten)){
+				// Vergleich mit leerem Knoten oder mit sich selbst ausschliessen
+				if (knoten == null || knoten.equals(this.einsamerKnoten)){
 					continue;
 				}
 				

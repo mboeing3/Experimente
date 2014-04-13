@@ -1,9 +1,10 @@
 package de.mindlessbloom.suffixtree.experiment04;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import de.mindlessbloom.nebenlaeufigkeit.Aktion;
@@ -30,13 +31,13 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	private KnotenKomparator komparator = new KnotenKomparator();
 
 	// Liste fuer MetaKnoten der naechsten Ebene; wird von den Vergleichsprozessen befuellt
-	private ConcurrentHashMap<String, MetaKnoten> metaKnotenPoolNaechsterEbene = new ConcurrentHashMap<String, MetaKnoten>();
-
-	// Iterator fuer Metaknotenpool; wird von den Vergleichsprozessen benutzt
-	private Iterator<MetaKnoten> metaKnoten = null;
+	private List<MetaKnoten> metaKnotenPoolNaechsterEbene;
+	
+	// Zeigt an, welches Element des Metaknotenpools als naechstes verarbeitet werden soll.
+	private int metaKnotenPoolVerarbeitungsIndex;
 
 	// Metaknotenliste
-	private ConcurrentHashMap<String, MetaKnoten> metaKnotenPool = null;
+	private List<MetaKnoten> metaKnotenPool = null;
 
 	// Nur Trefferknoten in Vergleichsbaeumen abbilden
 	private boolean behalteNurTreffer;
@@ -45,13 +46,13 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	private int gleichzeitigeProzesse = 1;
 	
 	// Variable fuer Ergebnis
-	private ConcurrentHashMap<String, MetaKnoten> ergebnisListe = null;
+	private List<MetaKnoten> ergebnisListe = null;
 
 	/*
 	 * Konstruktor
 	 */
 	public MetaBaumBauer(KnotenKomparator komparator,
-			ConcurrentHashMap<String, MetaKnoten> metaKnotenPool, boolean behalteNurTreffer, int gleichzeitigeProzesse) {
+			List<MetaKnoten> metaKnotenPool, boolean behalteNurTreffer, int gleichzeitigeProzesse) {
 		super();
 		this.komparator = komparator;
 		this.metaKnotenPool = metaKnotenPool;
@@ -70,11 +71,11 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 		this.komparator = komparator;
 	}
 
-	public ConcurrentHashMap<String, MetaKnoten> getMetaKnotenPool() {
+	public List<MetaKnoten> getMetaKnotenPool() {
 		return metaKnotenPool;
 	}
 
-	public void setMetaKnotenPool(ConcurrentHashMap<String, MetaKnoten> metaKnotenPool) {
+	public void setMetaKnotenPool(List<MetaKnoten> metaKnotenPool) {
 		this.metaKnotenPool = metaKnotenPool;
 	}
 
@@ -98,7 +99,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	 * Gibt den Ergebnisbaum des juengsten Aufrufs von baueBaum() zurueck.
 	 * @return
 	 */
-	public ConcurrentHashMap<String, MetaKnoten> getErgebnisListe() {
+	public List<MetaKnoten> getErgebnisListe() {
 		return ergebnisListe;
 	}
 
@@ -110,13 +111,16 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	 * Konstruiert neue Ebene von Metaknoten.
 	 * @return Liste der neuen Metaknoten
 	 */
-	public ConcurrentHashMap<String, MetaKnoten> baueBaum() {
+	public List<MetaKnoten> baueBaum() {
 		
 		// Ergebnisvariable loeschen
 		this.ergebnisListe = null;
 		
-		// Iterator fuer Metaknotenpool erstellen
-		this.metaKnoten = metaKnotenPool.values().iterator();
+		// Neue Instanz fuer Metaknotenpool der naechsten Ebene
+		metaKnotenPoolNaechsterEbene = new ArrayList<MetaKnoten>();
+		
+		// Verarbeitungsindex auf erstes Element setzen, das nach den initialen Prozessen verarbeitet werden soll.
+		metaKnotenPoolVerarbeitungsIndex = gleichzeitigeProzesse;
 		
 		// Schleife ueber Anzahl der maximalen Parallelprozesse
 		for (int i=0; (i<gleichzeitigeProzesse && i<metaKnotenPool.size()); i++){
@@ -125,12 +129,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 			KnotenPartnerProzessorRueckmeldeAktion aktion = new KnotenPartnerProzessorRueckmeldeAktion(metaKnotenPoolNaechsterEbene);
 			
 			// Naechsten Metaknoten ermitteln, falls vorhanden (Es ist bei sehr kleinen Korpora moeglich, dass die bereits gestarteten Prozesse zu diesem Zeitpunkt alles schon abgearbeitet haben).
-			MetaKnoten naechsterKnoten = null;
-			try {
-				naechsterKnoten = metaKnoten.next();
-			} catch (NoSuchElementException e){
-				
-			}
+			MetaKnoten naechsterKnoten = metaKnotenPool.get(i);
 			
 			if (naechsterKnoten != null){
 				// Prozessor instanziieren und mit Aktion in Liste aufnehmen
@@ -180,45 +179,67 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 			// Mit Prozess assoziierte Aktion ausfuehren
 			ergebnisAktion.ausfuehren(ergebnis);
 			
-			// Pruefen, ob noch Metaknoten im Pool verbleiben
-			if (metaKnoten.hasNext()){
 
+			synchronized (this) {
 				
-				// Pruefen, ob weitere MetaKnoten existieren, die verarbeitet werden sollen
-				MetaKnoten naechsterKnoten = null;
-				try {
-					naechsterKnoten = metaKnoten.next();
-				} catch (NoSuchElementException e){
-					
+				// Verarbeitungsindex erhoehen
+				this.metaKnotenPoolVerarbeitungsIndex++;
+
+				// Pruefen, ob noch Metaknoten im Pool verbleiben
+				if (this.metaKnotenPoolVerarbeitungsIndex<this.metaKnotenPool.size()) {
+
+					// Pruefen, ob weitere MetaKnoten existieren, die
+					// verarbeitet werden sollen
+					MetaKnoten naechsterKnoten = null;
+					try {
+						naechsterKnoten = this.metaKnotenPool.get(metaKnotenPoolVerarbeitungsIndex);
+
+					} catch (NoSuchElementException e) {
+						e.printStackTrace();
+					}
+
+					// Falls noch ein Knoten existiert, wird der naechste
+					// Prozessor initiiert und gestartet
+					if (naechsterKnoten != null) {
+						
+						Logger.getLogger(Start.class.getCanonicalName()).info("Erstelle naechsten Prozess ("+this.metaKnotenPoolVerarbeitungsIndex+" / "+this.metaKnotenPool.size());
+						
+						// Rueckmelde-Aktion definieren
+						KnotenPartnerProzessorRueckmeldeAktion aktion = new KnotenPartnerProzessorRueckmeldeAktion(
+								metaKnotenPoolNaechsterEbene);
+
+						// Prozessor instanziieren und mit Aktion in Liste
+						// aufnehmen
+						KnotenPartnerProzessor prozessor = new KnotenPartnerProzessor(
+								this, naechsterKnoten, metaKnotenPool,
+								komparator, behalteNurTreffer);
+						this.rueckmeldeAktionen.put(prozessor, aktion);
+
+						// Prozessor in Prozess kapseln und nebenlaeufig starten
+						Thread naechsterProzess = new Thread(prozessor);
+						naechsterProzess.start();
+					}
+				} else {
+					// Keine Knoten mehr verbleibend - pruefen, ob noch Prozesse
+					// laufen, oder die Bearbeitung der aktuellen Beumebene
+					// (bzw. des aktuellen Metaknotenpools) abgeschlossen ist.
+
+					if (this.rueckmeldeAktionen.size() <= 1) {
+						// Meldung ausgeben
+						Logger.getLogger(Start.class.getCanonicalName()).info(
+								"Bearbeitung des aktuellen Pools abgeschlossen. Der neue Pool hat "
+										+ this.metaKnotenPoolNaechsterEbene
+												.size() + " Elemente.");
+
+						// Ergebnis speichern
+						this.ergebnisListe = metaKnotenPoolNaechsterEbene;
+					}
 				}
-				
-				// Falls noch ein Knoten existiert, wird der naechste Prozessor initiiert und gestartet
-				if (naechsterKnoten != null){
-					// Rueckmelde-Aktion definieren
-					KnotenPartnerProzessorRueckmeldeAktion aktion = new KnotenPartnerProzessorRueckmeldeAktion(metaKnotenPoolNaechsterEbene);
-					
-					// Prozessor instanziieren und mit Aktion in Liste aufnehmen
-					KnotenPartnerProzessor prozessor = new KnotenPartnerProzessor(this, naechsterKnoten, metaKnotenPool, komparator, behalteNurTreffer);
-					this.rueckmeldeAktionen.put(prozessor, aktion);
-					
-					// Prozessor in Prozess kapseln und nebenlaeufig starten
-					Thread naechsterProzess = new Thread(prozessor);
-					naechsterProzess.start();
-				}
-			} else {
-				// Keine Knoten mehr verbleibend - pruefen, ob noch Prozesse laufen, oder die Bearbeitung der aktuellen Beumebene (bzw. des aktuellen Metaknotenpools) abgeschlossen ist.
-				
-				if (this.rueckmeldeAktionen.size() <= 1){
-					// Meldung ausgeben
-					Logger.getLogger(Start.class.getCanonicalName()).info("Bearbeitung des aktuellen Pools abgeschlossen. Der neue Pool hat "+this.metaKnotenPoolNaechsterEbene.size()+" Elemente.");
-					
-					// Ergebnis speichern
-					this.ergebnisListe = metaKnotenPoolNaechsterEbene;
-				}
+
+				// Prozess aus Liste entfernen
+				this.rueckmeldeAktionen.remove(prozess);
+
 			}
-			
-			// Prozess aus Liste entfernen
-			this.rueckmeldeAktionen.remove(prozess);
 			
 		} else {
 			// Keine Aktion zu empfangenem Prozess gefunden; Meldung ausgeben
@@ -248,6 +269,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 	 * @return Wurzel des neuen Baumes
 	 */
 	public Knoten konvertiereMetaKnotenZuKnoten(MetaKnoten mk){
+		if (mk == null || mk.getKnoten() == null) return null;
 		Knoten k = new Knoten();
 		k.setName(mk.getKnoten().getName());
 		if (mk.getUebereinstimmungsQuotient() != null){
@@ -258,6 +280,7 @@ public class MetaBaumBauer implements RueckmeldungsEmpfaenger {
 		Iterator<MetaKnoten> kinder = mk.getKindMetaKnoten().iterator();
 		while(kinder.hasNext()){
 			Knoten kind = konvertiereMetaKnotenZuKnoten(kinder.next());
+			if (kind != null)
 			k.getKinder().put(kind.getName(), kind);
 		}
 		

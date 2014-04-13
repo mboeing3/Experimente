@@ -284,6 +284,21 @@ public class BaumBauer {
 		return this.konstruiereUbiGraph(knoten, null, 0);
 		
 	}
+	
+	/**
+	 * Gibt einen UbiGraphen mit dem uebergebenen Baum zurueck
+	 * 
+	 * @param knoten
+	 * @return
+	 */
+	public UbigraphClient konstruiereUbiGraph(Knoten knoten, UbigraphClient graph) {
+		
+		graph.newVertex(0);
+		graph.setVertexAttribute(0, "label", knoten.getName());
+
+		return this.konstruiereUbiGraph(knoten, graph, 0);
+		
+	}
 
 	/**
 	 * Gibt einen UbiGraphen mit dem uebergebenen Baum zurueck
@@ -292,7 +307,7 @@ public class BaumBauer {
 	 * @param graph
 	 * @return
 	 */
-	private UbigraphClient konstruiereUbiGraph(Knoten knoten,
+	public UbigraphClient konstruiereUbiGraph(Knoten knoten,
 			UbigraphClient graph, int vaterKnotenId) {
 
 		if (graph == null) {
@@ -307,8 +322,11 @@ public class BaumBauer {
 			Knoten kind = knoten.getKinder().get(kinder.next());
 			int neuerKnotenId = graph.newVertex();
 			graph.setVertexAttribute(neuerKnotenId, "label", kind.getName());
+			double groesse = Math.log((double)kind.getZaehler()+2d)/4d;
+			graph.setVertexAttribute(neuerKnotenId, "size", Double.toString(groesse));
 			int neueKanteId = graph.newEdge(vaterKnotenId, neuerKnotenId);
 			graph.setEdgeAttribute(neueKanteId, "oriented", "true");
+			//graph.setEdgeAttribute(neueKanteId, "label", kind.getName());
 			konstruiereUbiGraph(kind, graph, neuerKnotenId);
 		}
 

@@ -2,6 +2,8 @@ package de.mindlessbloom.suffixtree;
 
 import java.util.Arrays;
 
+import org.ubiety.ubigraph.UbigraphClient;
+
 import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
 import de.mindlessbloom.suffixtree.experiment01_03.Kante;
 import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
@@ -49,10 +51,18 @@ public class Test4 {
 		}
 		//KnotenKomparator kk = new KnotenKomparator();
 		
-		GraphenPlotter g = new GraphenPlotter();
+		//GraphenPlotter g = new GraphenPlotter();
 		
-		g.plot(graph, 2);
-		g.plot(graph2, 2);
+		//g.plot(graph, 2);
+		//g.plot(graph2, 2);
+		
+		UbigraphClient ugraph = new UbigraphClient("http://192.168.99.52:20738/RPC2");
+
+		ugraph.clear();
+		
+		
+		b.konstruiereUbiGraph(wurzel, ugraph);
+		  
 		
 
 	}
