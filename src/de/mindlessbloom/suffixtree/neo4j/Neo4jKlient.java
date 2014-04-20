@@ -10,7 +10,7 @@ import com.sun.jersey.api.client.WebResource;
 
 public class Neo4jKlient {
 
-	public static final String SERVER_WURZEL_URI = "http://localhost:7474/db/data/";
+	public static final String SERVER_WURZEL_URI = "http://127.0.0.1:7474/db/data/";
 	public static final String SERVER_KNOTEN_URI = SERVER_WURZEL_URI + "node";
 
 	public static void main(String[] args) {

@@ -1,13 +1,14 @@
 package de.mindlessbloom.suffixtree.experiment05;
 
 import java.io.File;
-import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
@@ -17,7 +18,6 @@ import org.apache.commons.cli.Options;
 
 import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
 import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
-import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
 import de.mindlessbloom.suffixtree.neo4j.Neo4jKlient;
 import de.mindlessbloom.suffixtree.oanc.OANC;
 import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
@@ -105,12 +105,15 @@ public class Start {
 		
 	}
 	
-	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwert) throws Exception{
+	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe) throws Exception{
 		// Laufzeitinstanz ermitteln
 		Runtime rt = Runtime.getRuntime();
 		
 		// Speicherinfo ausgeben
 		Logger.getLogger(Start.class.getCanonicalName()).info("Belegter Hauptspeicher: "+ (rt.totalMemory() - rt.freeMemory()));
+		
+		// Schwellwert in finale Variable schreiben
+		final Double schwellwert = schwellwertEingabe;
 		
 		/**
 		 * Korpus einlesen (Ergebnis in Objekt satzListe)
@@ -189,7 +192,7 @@ public class Start {
 				"Erstelle Suffixbaum.");
 
 		// Wurzelknoten erstellen
-		Knoten wurzel = new Knoten();
+		final Knoten wurzel = new Knoten();
 		wurzel.setName("^");
 
 		// BaumBauer erstellen
@@ -252,39 +255,69 @@ public class Start {
 		 *  Suffixbaumzweige vergleichen und zum Graphen hinzufuegen
 		 */
 		
-		// Zweige des Suffixbaums als Array abbilden
-		Knoten[] zweige = wurzel.getKinder().values().toArray(new Knoten[wurzel.getKinder().size()]);
-		
-		// Komparator instanziieren
-		KnotenKomparator komparator = new KnotenKomparator();
-		
-		// Liste der bereits angelegten Knoten
-		Map<String,URI> angelegteKnoten = new HashMap<String,URI>();
-		List<String> komplettDurchlaufeneKnoten = new ArrayList<String>();
-		
 		// Graph-Datenbank-Klienten instanziieren
-		Neo4jKlient graph = new Neo4jKlient();
+		final Neo4jKlient graph = new Neo4jKlient();
 		
-		// Berechnungen fuer Fortschrittsanzeige
-		class Fortschritt {
-			public BigInteger gesamt;
-			public BigInteger fortschritt = BigInteger.ZERO;
-		}
-		BigInteger zweigAnzahl = BigInteger.valueOf(zweige.length);
-		final Fortschritt fortschritt = new Fortschritt();
-		fortschritt.gesamt =  zweigAnzahl.multiply(zweigAnzahl);
+		// Liste der bereits in der Graphendatenbank angelegten Knoten
+		Map<String,URI> angelegteKnoten = new HashMap<String,URI>();
 		
-		Thread fortschrittsAnzeiger = new Thread() {
-			private BigInteger letzterFortschritt = fortschritt.fortschritt;
+		// Meldung anzeigen
+		Logger.getLogger(Start.class.getCanonicalName()).info("Fuege "+wurzel.getKinder().size()+" Knoten zu Graphen hinzu.");
+		
+		
+		
+		// Map der Suffixbaumzweige in Liste wandeln
+		final List<Knoten> zweige = new ArrayList<Knoten>();
+		
+		// Fortschrittsanzeigeprozess
+		Thread fortschrittsAnzeigerKnotenZuGraphen = new Thread() {
 			@Override
 			public void run() {
 				try {
-					Logger.getLogger(Start.class.getCanonicalName()).info(fortschritt.fortschritt + " / "+ fortschritt.gesamt);
-					while (fortschritt.fortschritt.compareTo(fortschritt.gesamt)<0){
+					while (wurzel.getKinder().size()>0){
+						Logger.getLogger(Start.class.getCanonicalName()).info(zweige.size()+"/"+wurzel.getKinder().size());
 						Thread.sleep(5000);
-						BigInteger kpm = fortschritt.fortschritt.subtract(letzterFortschritt).multiply(BigInteger.valueOf(12l));
-						letzterFortschritt = fortschritt.fortschritt;
-						Logger.getLogger(Start.class.getCanonicalName()).info("Fortschritt: "+fortschritt.fortschritt+" / "+fortschritt.gesamt+" ("+fortschritt.fortschritt.divide(fortschritt.gesamt).multiply(BigInteger.valueOf(100l))+"% ; "+kpm+" kpm)");
+					}
+					Logger.getLogger(Start.class.getCanonicalName()).info("fertig.");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		fortschrittsAnzeigerKnotenZuGraphen.start();
+		
+		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
+		while(kinder.hasNext()){
+			
+			// Namen des naechsten Kindelements ermitteln 
+			String kindName = kinder.next();
+			
+			// Knoten ermitteln
+			Knoten kind = wurzel.getKinder().get(kindName);
+			
+			// Kind in Liste aufnehmen
+			zweige.add(kind);
+			
+			// Knoten in Graphen einfuegen
+			URI knotenUri = graph.erstelleKnoten(kind.getName());
+			angelegteKnoten.put(kind.getName(),knotenUri);
+		}
+		// Werte aus Map loeschen
+		wurzel.getKinder().clear();
+		
+		
+		// Berechnungen fuer Fortschrittsanzeige
+		
+		final Fortschritt fortschritt = new Fortschritt(zweige.size());
+		
+		Thread fortschrittsAnzeiger = new Thread() {
+			@Override
+			public void run() {
+				try {
+					while (fortschritt.getVerbleibend()>0){
+						Thread.sleep(5000);
+						Logger.getLogger(Start.class.getCanonicalName()).info("Noch miteinander zu vergleichen: "+fortschritt.getVerbleibend()+" ("+fortschritt.getVerarbeitet()*12+" vpm)");
+						fortschritt.setVerarbeitet(0l);
 					}
 					Logger.getLogger(Start.class.getCanonicalName()).info("fertig.");
 				} catch (InterruptedException e) {
@@ -294,49 +327,48 @@ public class Start {
 		};
 		fortschrittsAnzeiger.start();
 		
-		// Liste der Suffixbaumzweige durchlaufen
-		for (int i=0; i<zweige.length; i++){
-			
-			// Pruefen, ob der Knoten im Graphen bereits existiert und ihn ggf. erstellen
-			URI neueKnotenUri;
-			if (!angelegteKnoten.containsKey(zweige[i].getName())){
-				neueKnotenUri = graph.erstelleKnoten(zweige[i].getName());
-				angelegteKnoten.put(zweige[i].getName(),neueKnotenUri);
-			} else {
-				neueKnotenUri = angelegteKnoten.get(zweige[i].getName());
-			}
-			
-			// Innere Schleife
-			for (int j=0; j<zweige.length; j++){
-				
-				fortschritt.fortschritt = fortschritt.fortschritt.add(BigInteger.ONE);
-				
-				// Pruefen, ob i=j (kein Knoten soll mit sich selbst verglichen werden), ausserdem wird auf leere Knoten geprueft.
-				if (i==j || zweige[i] == null || zweige[i].getName().isEmpty()) continue;
-				
-				URI vergleichsKnotenUri = angelegteKnoten.get(zweige[j].getName());
-				
-				// Pruefen, ob der Knoten im Graphen bereits existiert und ihn ggf. erstellen
-				if (vergleichsKnotenUri == null){
-					
-					// Knoten in Graphen einfuegen
-					vergleichsKnotenUri = graph.erstelleKnoten(zweige[j].getName());
-					angelegteKnoten.put(zweige[j].getName(),vergleichsKnotenUri);
-				}
-				if (!komplettDurchlaufeneKnoten.contains(zweige[j].getName())){
-					// Vergleich ist nur notwendig, wenn der Knoten zuvor noch nicht komplett durchlaufen wurde
-					Double uebereinstimmungsQuotient = komparator.vergleiche(zweige[i], zweige[j]);
-					
-					// Ggf. Kante zwischen beiden Knoten erstellen
-					if (uebereinstimmungsQuotient > schwellwert){
-						URI verknuepfungsUri = graph.addRelationship(neueKnotenUri, vergleichsKnotenUri, "aehnelt", "{ }");
-						graph.addMetadataToProperty(verknuepfungsUri, "gewicht", uebereinstimmungsQuotient.toString());
-					}
-				}
-			}
+		
+		// Wiederholen, bis die Liste der Suffixbaumzweige leer ist
+		while (!zweige.isEmpty()) {
 
-			komplettDurchlaufeneKnoten.add(zweige[i].getName());
+			// Erstes Element aus Liste extrahieren
+			final Knoten knoten = zweige.remove(0);
+
+			// URI des Knotens im Graphen ermitteln
+			final URI knotenUri = angelegteKnoten.get(knoten.getName());
+
+			// Neuen Exekutor instanziieren
+			ExecutorService exekutor = Executors.newFixedThreadPool(gleichzeitigeProzesse);
 			
+			// Liste der verbleibenden Suffixbaumzweige durchlaufen
+			Iterator<Knoten> vergleichsKnotenIterator = zweige.iterator();
+			while (vergleichsKnotenIterator.hasNext()) {
+
+				// Naechsten Vergleichsknoten ermitteln
+				final Knoten vergleichsKnoten = vergleichsKnotenIterator.next();
+
+				// Auf leere Knoten pruefen (sollte EIGENTLICH nicht vorkommen)
+				if (vergleichsKnoten == null || vergleichsKnoten.getName().isEmpty())
+					continue;
+
+				// URI des Vergleichsknotens im Graphen ermitteln
+				final URI vergleichsKnotenUri = angelegteKnoten.get(vergleichsKnoten.getName());
+
+				// Neuen Vergleichsprozess instanziieren und an Exekutor uebergeben
+				Runnable prozess = new VergleichsProzess(graph, schwellwert, knoten, vergleichsKnoten, knotenUri, vergleichsKnotenUri, fortschritt);
+		        exekutor.execute(prozess);
+			}
+			
+			// Exekutor stoppen
+			exekutor.shutdown();
+	        while (!exekutor.isTerminated()) {
+	        	//Logger.getLogger(Start.class.getCanonicalName()).info("");
+	        	Thread.sleep(5000l);
+	        }
+
+			// Fortschritt mitzaehlen (fuer Anzeige)
+			fortschritt.setVerbleibend(fortschritt.getVerbleibend()-1);
+
 		}
 		
 
