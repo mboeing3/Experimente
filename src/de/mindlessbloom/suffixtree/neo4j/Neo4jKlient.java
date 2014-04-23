@@ -90,6 +90,22 @@ public class Neo4jKlient {
 		response.close();
 	}
 
+	public void eigenschaftHinzufuegen(URI knotenUri,
+			String eigenschaftsBezeichner, int eigenschaftsWert) {
+		String propertyUri = knotenUri.toString() + "/properties/"
+				+ eigenschaftsBezeichner;
+		// http://localhost:7474/db/data/node/{node_id}/properties/{property_name}
+
+		WebResource resource = Client.create().resource(propertyUri);
+		ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+				.type(MediaType.APPLICATION_JSON)
+				.entity(String.valueOf(eigenschaftsWert))
+				.put(ClientResponse.class);
+
+		// System.out.println(String.format("PUT to [%s], status code [%d]",propertyUri, response.getStatus()));
+		response.close();
+	}
+
 	public URI addRelationship(URI startNode, URI endNode,
 			String relationshipType, String jsonAttributes)
 			throws URISyntaxException {

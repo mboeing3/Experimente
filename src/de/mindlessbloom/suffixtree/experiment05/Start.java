@@ -53,6 +53,14 @@ public class Start {
 		// Option fuer Datenstrukturkonstruktion hinzufuegen
 		optionen.addOption("s", true, "Uebereinstimmungsquotienten-Schwellwert fuer die Erstellung einer Verbindung zwischen zwei Knoten im Graphen (Standard 0.1).");
 		
+		// Option fuer Datenstrukturkonstruktion hinzufuegen
+		optionen.addOption("v", true, "Schwellwert fuer minimale Anzahl der Wortvorkommen, unterhalb dessen Begriffe nicht verarbeitet werden (Standard 0).");
+		
+		// Option fuer Datenstrukturkonstruktion hinzufuegen
+		optionen.addOption("a", true, "Maximale Anzahl an Verbindungen, die ein Begriff haben darf (Standard 0=ignorieren).");
+		
+		
+		
 		/**
 		 * Kommandozeilenoptionen auswerten
 		 */
@@ -97,15 +105,29 @@ public class Start {
 				schwellwert = Double.parseDouble(kommandozeile.getOptionValue("s"));
 		}
 		
+		// Schwellwert fuer Wortvorkommen
+		int minWortvorkommen = 0;
+		if(kommandozeile.hasOption("v")) {
+			if (Integer.parseInt(kommandozeile.getOptionValue("v")) > 0)
+				minWortvorkommen = Integer.parseInt(kommandozeile.getOptionValue("v"));
+		}
+		
+		// Max. Anzahl an Verbindungen eines Begriffs
+		int maxBegriffsVerbindungen = 0;
+		if(kommandozeile.hasOption("a")) {
+			if (Integer.parseInt(kommandozeile.getOptionValue("a")) > 0)
+				maxBegriffsVerbindungen = Integer.parseInt(kommandozeile.getOptionValue("a"));
+		}
+		
 		// Startobjekt instanziieren
 		Start start = new Start();
 		
 		// Experiment durchfuehren
-		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert);
+		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen);
 		
 	}
 	
-	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe) throws Exception{
+	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen) throws Exception{
 		// Laufzeitinstanz ermitteln
 		Runtime rt = Runtime.getRuntime();
 		
@@ -262,12 +284,15 @@ public class Start {
 		Map<String,URI> angelegteKnoten = new HashMap<String,URI>();
 		
 		// Meldung anzeigen
-		Logger.getLogger(Start.class.getCanonicalName()).info("Fuege "+wurzel.getKinder().size()+" Knoten zu Graphen hinzu.");
+		Logger.getLogger(Start.class.getCanonicalName()).info("Der Suffixbaum hat "+wurzel.getKinder().size()+" Zweige.");
 		
 		
 		
 		// Map der Suffixbaumzweige in Liste wandeln
 		final List<Knoten> zweige = new ArrayList<Knoten>();
+		
+		// Fortschritt nachhalten
+		final Fortschritt knotenInGraphenFortschritt = new Fortschritt(wurzel.getKinder().size());
 		
 		// Fortschrittsanzeigeprozess
 		Thread fortschrittsAnzeigerKnotenZuGraphen = new Thread() {
@@ -275,7 +300,7 @@ public class Start {
 			public void run() {
 				try {
 					while (wurzel.getKinder().size()>0){
-						Logger.getLogger(Start.class.getCanonicalName()).info(zweige.size()+"/"+wurzel.getKinder().size());
+						Logger.getLogger(Start.class.getCanonicalName()).info(knotenInGraphenFortschritt.getVerarbeitet()+"/"+knotenInGraphenFortschritt.getVerbleibend());
 						Thread.sleep(5000);
 					}
 					Logger.getLogger(Start.class.getCanonicalName()).info("fertig.");
@@ -295,12 +320,19 @@ public class Start {
 			// Knoten ermitteln
 			Knoten kind = wurzel.getKinder().get(kindName);
 			
-			// Kind in Liste aufnehmen
-			zweige.add(kind);
+			// Pruefen, ob wortvorkommen ueberhalb des Schwellwerts liegen
+			if (kind.getZaehler() > minWortvorkommen){
+				// Kind in Liste aufnehmen
+				zweige.add(kind);
+				
+				// Knoten in Graphen einfuegen
+				URI knotenUri = graph.erstelleKnoten(kind.getName());
+				graph.eigenschaftHinzufuegen(knotenUri, "haeufigkeit", kind.getZaehler());
+				angelegteKnoten.put(kind.getName(),knotenUri);
+			}
 			
-			// Knoten in Graphen einfuegen
-			URI knotenUri = graph.erstelleKnoten(kind.getName());
-			angelegteKnoten.put(kind.getName(),knotenUri);
+			// Fortschritt mitzaehlen
+			knotenInGraphenFortschritt.setVerarbeitet(knotenInGraphenFortschritt.getVerarbeitet()+1);
 		}
 		// Werte aus Map loeschen
 		wurzel.getKinder().clear();
