@@ -4,17 +4,21 @@ import java.net.URISyntaxException;
 
 import javax.ws.rs.core.MediaType;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
-public class Neo4jKlient {
+public class Neo4jRestKlient {
 
 	public static final String SERVER_WURZEL_URI = "http://127.0.0.1:7474/db/data/";
 	public static final String SERVER_KNOTEN_URI = SERVER_WURZEL_URI + "node";
 
 	public static void main(String[] args) {
-		Neo4jKlient instanz = new Neo4jKlient();
+		Neo4jRestKlient instanz = new Neo4jRestKlient();
 		instanz.test();
 	}
 
@@ -166,6 +170,38 @@ public class Neo4jKlient {
 
 	private String toJsonNameValuePairCollection(String name, String value) {
 		return String.format("{ \"%s\" : \"%s\" }", name, value);
+	}
+	
+	/**
+	 * Erstellt mehrere Kanten in einer Transaktion (hat deutlich hoehere Performanz).
+	 * Die uebergebenen Arrays muessen gleich lang sein!
+	 * @param quellen URIs der Quell-Knoten
+	 * @param ziele URIs der Ziel-Knoten
+	 * @param gewichte Gewicht der Kanten
+	 * @throws Exception Bei unterschiedlich langen Arrays als Eingabe
+	 */
+	public void erstelleKanten(URI[] quellen, URI[] ziele, Double[] gewichte, GraphDatabaseService graphDb) throws Exception {
+		
+		// Eingabe pruefen
+		if (quellen.length != ziele.length || ziele.length != gewichte.length){
+			throw new Exception("Es muessen gleich viele Quellen, Ziele und Gewichte angegeben werden!");
+		}
+		
+		Transaction tx = graphDb.beginTx();
+	    try
+	    {
+	    
+	    	
+	        /*Node node = graphDb.createNode();
+	        node.
+	        tx.success();
+	        return node;*/
+	    }
+	    finally
+	    {
+	        tx.finish();
+	    }
+		
 	}
 
 }

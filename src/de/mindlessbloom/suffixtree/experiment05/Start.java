@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -18,7 +20,7 @@ import org.apache.commons.cli.Options;
 
 import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
 import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
-import de.mindlessbloom.suffixtree.neo4j.Neo4jKlient;
+import de.mindlessbloom.suffixtree.neo4j.Neo4jRestKlient;
 import de.mindlessbloom.suffixtree.oanc.OANC;
 import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
 
@@ -57,7 +59,7 @@ public class Start {
 		optionen.addOption("v", true, "Schwellwert fuer minimale Anzahl der Wortvorkommen, unterhalb dessen Begriffe nicht verarbeitet werden (Standard 0).");
 		
 		// Option fuer Datenstrukturkonstruktion hinzufuegen
-		optionen.addOption("a", true, "Maximale Anzahl an Verbindungen, die ein Begriff haben darf (Standard 0=ignorieren).");
+		optionen.addOption("a", true, "Maximale Anzahl an Verbindungen, die fuer einen Begriff jeweils geknuepft werden (Standard 0=ignorieren).");
 		
 		
 		
@@ -123,19 +125,20 @@ public class Start {
 		Start start = new Start();
 		
 		// Experiment durchfuehren
-		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen);
+		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen, maxBegriffsVerbindungen);
 		
 	}
 	
-	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen) throws Exception{
+	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen, int maxBegriffsVerbindungenEingabe) throws Exception{
 		// Laufzeitinstanz ermitteln
 		Runtime rt = Runtime.getRuntime();
 		
 		// Speicherinfo ausgeben
 		Logger.getLogger(Start.class.getCanonicalName()).info("Belegter Hauptspeicher: "+ (rt.totalMemory() - rt.freeMemory()));
 		
-		// Schwellwert in finale Variable schreiben
+		// Werte fuer Parallelprozessverarbeitung in finale Variablen schreiben
 		final Double schwellwert = schwellwertEingabe;
+		final int maxBegriffsVerbindungen = maxBegriffsVerbindungenEingabe;
 		
 		/**
 		 * Korpus einlesen (Ergebnis in Objekt satzListe)
@@ -278,7 +281,7 @@ public class Start {
 		 */
 		
 		// Graph-Datenbank-Klienten instanziieren
-		final Neo4jKlient graph = new Neo4jKlient();
+		final Neo4jRestKlient graph = new Neo4jRestKlient();
 		
 		// Liste der bereits in der Graphendatenbank angelegten Knoten
 		Map<String,URI> angelegteKnoten = new HashMap<String,URI>();
@@ -359,6 +362,10 @@ public class Start {
 		};
 		fortschrittsAnzeiger.start();
 		
+		/**
+		 * Die Liste der Suffixbaumzweige wird durchlaufen, um jedes Element mit jedem zu vergleichen.
+		 * Die Wurzel eines jeden Suffixbaumzweigs bildet an dieser Stelle einen Begriff ab.
+		 */
 		
 		// Wiederholen, bis die Liste der Suffixbaumzweige leer ist
 		while (!zweige.isEmpty()) {
@@ -368,6 +375,9 @@ public class Start {
 
 			// URI des Knotens im Graphen ermitteln
 			final URI knotenUri = angelegteKnoten.get(knoten.getName());
+			
+			// Map fuer Verknuepfungen
+			final ConcurrentHashMap<String,Double> verknuepfungen = new ConcurrentHashMap<String,Double>();
 
 			// Neuen Exekutor instanziieren
 			ExecutorService exekutor = Executors.newFixedThreadPool(gleichzeitigeProzesse);
@@ -383,19 +393,60 @@ public class Start {
 				if (vergleichsKnoten == null || vergleichsKnoten.getName().isEmpty())
 					continue;
 
-				// URI des Vergleichsknotens im Graphen ermitteln
-				final URI vergleichsKnotenUri = angelegteKnoten.get(vergleichsKnoten.getName());
-
 				// Neuen Vergleichsprozess instanziieren und an Exekutor uebergeben
-				Runnable prozess = new VergleichsProzess(graph, schwellwert, knoten, vergleichsKnoten, knotenUri, vergleichsKnotenUri, fortschritt);
+				Runnable prozess = new VergleichsProzess(schwellwert, knoten, vergleichsKnoten, verknuepfungen, fortschritt);
 		        exekutor.execute(prozess);
 			}
 			
 			// Exekutor stoppen
 			exekutor.shutdown();
+			
+			// Auf Abschluss der Prozesse warten
 	        while (!exekutor.isTerminated()) {
-	        	//Logger.getLogger(Start.class.getCanonicalName()).info("");
-	        	Thread.sleep(5000l);
+	        	Thread.sleep(100l);
+	        }
+	        
+	        /**
+	         * Die Ergebnisliste mit allen Uebereinstimmungsquotienten fuer den aktuellen Knoten
+	         * wird im Folgenden durchlaufen und ggf. auf eine Maximalanzahl beschraenkt, wobei
+	         * die jeweils staerksten Uebereinstimmungsquotienten Vorrang haben.
+	         */
+	        
+	        // Map fuer staerkste Verknuepfungen erstellen (ggf. limitiert)
+	        TreeMap<Double,String> staerksteVerknuepfungen = new TreeMap<Double,String>();
+	        
+	        // Ergebnisliste durchlaufen
+	        Iterator<String> verknuepfteBegriffe = verknuepfungen.keySet().iterator();
+	        while(verknuepfteBegriffe.hasNext()){
+	        	
+	        	// Namen des naechsten Knotens ermitteln
+	        	String verknuepfterKnotenName = verknuepfteBegriffe.next();
+	        	
+	        	// Uebereinstimmungsquotienten des naechsten Knotens ermitteln
+	        	Double verknuepfterKnotenUebereinstimmungsquotient = verknuepfungen.get(verknuepfterKnotenName);
+	        	
+	        	// Pruefen, ob Limit an Verknuepfungen existiert, bzw. Limit noch nicht erreich ist, bzw. der UeQ. des aktuellen Vergleichsknotens hoeher ist, als der niedrigste in der Liste
+	        	if (maxBegriffsVerbindungen <= 0 || maxBegriffsVerbindungen > staerksteVerknuepfungen.size() || verknuepfterKnotenUebereinstimmungsquotient > staerksteVerknuepfungen.firstKey()){
+	        		// Knoten in Liste aufnehmen
+	        		staerksteVerknuepfungen.put(verknuepfterKnotenUebereinstimmungsquotient, verknuepfterKnotenName);
+	        		// Ggf. schwaechste Verknuepfung aus der Liste loeschen
+	        		if (maxBegriffsVerbindungen != 0 && maxBegriffsVerbindungen < staerksteVerknuepfungen.size()){
+	        			staerksteVerknuepfungen.remove(staerksteVerknuepfungen.firstKey());
+	        		}
+	        	}
+	        }
+
+			/**
+			 * Die Liste der verbleibenden Verknuepfungen wird durchlaufen und an die Graphen-DB uebertragen. 
+			 */
+	         
+	        // Verknuepfungsliste durchlaufen
+	        Iterator<Double> staerksteVerknuepfungsWerte = staerksteVerknuepfungen.keySet().iterator();
+	        while (staerksteVerknuepfungsWerte.hasNext()){
+	        	
+	        	Double wert = staerksteVerknuepfungsWerte.next();
+	        	String name = staerksteVerknuepfungen.get(wert);
+	        	
 	        }
 
 			// Fortschritt mitzaehlen (fuer Anzeige)

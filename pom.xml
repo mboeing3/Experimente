@@ -42,17 +42,17 @@
 			<version>3.1.3</version>
 		</dependency>
 		<!-- Tinkerpop Blueprints Graph Model Interface -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-core</artifactId>
 			<version>2.4.0</version>
-		</dependency>
+		</dependency> -->
 		<!-- Neo4j-Anbindung fuer Tinkerpop Blueprints -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-neo4j-graph</artifactId>
 			<version>2.4.0</version>
-		</dependency>
+		</dependency> -->
 		<!-- Tinkerpop Blueprints JUNG Schnittstelle -->
 		<!--<dependency> <groupId>com.tinkerpop.blueprints</groupId> <artifactId>blueprints-graph-jung</artifactId> 
 			<version>2.4.0</version> </dependency> -->
@@ -67,6 +67,12 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.2.4</version>
+		</dependency>
+		<!-- Neo4j-API -->
+		<dependency>
+    		<groupId>org.neo4j</groupId>
+    		<artifactId>neo4j</artifactId>
+    		<version>2.0.1</version>
 		</dependency>
 	</dependencies>
 </project>
