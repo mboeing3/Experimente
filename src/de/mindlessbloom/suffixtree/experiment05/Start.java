@@ -1,7 +1,6 @@
 package de.mindlessbloom.suffixtree.experiment05;
 
 import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,10 +16,11 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.neo4j.graphdb.Node;
 
 import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
 import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
-import de.mindlessbloom.suffixtree.neo4j.Neo4jRestKlient;
+import de.mindlessbloom.suffixtree.neo4j.Neo4jLokalKlient;
 import de.mindlessbloom.suffixtree.oanc.OANC;
 import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
 
@@ -60,6 +60,9 @@ public class Start {
 		
 		// Option fuer Datenstrukturkonstruktion hinzufuegen
 		optionen.addOption("a", true, "Maximale Anzahl an Verbindungen, die fuer einen Begriff jeweils geknuepft werden (Standard 0=ignorieren).");
+		
+		// Option fuer Graphenkommunikation hinzufuegen
+		optionen.addOption("T", true, "Maximale Anzahl an Elementen, die in einer Transaktion an den Graphen uebermittelt werden (Standard 1000).");
 		
 		
 		
@@ -281,10 +284,10 @@ public class Start {
 		 */
 		
 		// Graph-Datenbank-Klienten instanziieren
-		final Neo4jRestKlient graph = new Neo4jRestKlient();
+		final Neo4jLokalKlient graph = new Neo4jLokalKlient("/home/marcel/opt/neo4j-community-2.0.1/data/graph.db");
 		
 		// Liste der bereits in der Graphendatenbank angelegten Knoten
-		Map<String,URI> angelegteKnoten = new HashMap<String,URI>();
+		Map<String,Node> angelegteKnoten = new HashMap<String,Node>();
 		
 		// Meldung anzeigen
 		Logger.getLogger(Start.class.getCanonicalName()).info("Der Suffixbaum hat "+wurzel.getKinder().size()+" Zweige.");
@@ -329,14 +332,17 @@ public class Start {
 				zweige.add(kind);
 				
 				// Knoten in Graphen einfuegen
-				URI knotenUri = graph.erstelleKnoten(kind.getName());
-				graph.eigenschaftHinzufuegen(knotenUri, "haeufigkeit", kind.getZaehler());
-				angelegteKnoten.put(kind.getName(),knotenUri);
+				Map<String,Node> knotenListe = graph.fuegeKnotenErstellungZurWarteschlangeHinzu(kind.getName(),kind.getZaehler());
+				if (knotenListe != null)
+				angelegteKnoten.putAll(knotenListe);
 			}
 			
 			// Fortschritt mitzaehlen
 			knotenInGraphenFortschritt.setVerarbeitet(knotenInGraphenFortschritt.getVerarbeitet()+1);
 		}
+		// Ggf. verbleibende Transaktionen anstossen
+		angelegteKnoten.putAll(graph.starteTransaktionKnoten());
+		
 		// Werte aus Map loeschen
 		wurzel.getKinder().clear();
 		
@@ -372,9 +378,6 @@ public class Start {
 
 			// Erstes Element aus Liste extrahieren
 			final Knoten knoten = zweige.remove(0);
-
-			// URI des Knotens im Graphen ermitteln
-			final URI knotenUri = angelegteKnoten.get(knoten.getName());
 			
 			// Map fuer Verknuepfungen
 			final ConcurrentHashMap<String,Double> verknuepfungen = new ConcurrentHashMap<String,Double>();
@@ -447,12 +450,20 @@ public class Start {
 	        	Double wert = staerksteVerknuepfungsWerte.next();
 	        	String name = staerksteVerknuepfungen.get(wert);
 	        	
+	        	// Kante an Graph uebermitteln
+	        	graph.fuegeKantenErstellungZurWarteschlangeHinzu(angelegteKnoten.get(knoten.getName()), angelegteKnoten.get(name), wert);
+	        	
 	        }
+	        // Ggf. verbleibende Transaktionen anstossen
+	        graph.starteTransaktionKanten();
 
 			// Fortschritt mitzaehlen (fuer Anzeige)
 			fortschritt.setVerbleibend(fortschritt.getVerbleibend()-1);
 
 		}
+		
+		// Graphen schliessen
+		graph.beenden();
 		
 
 	}
