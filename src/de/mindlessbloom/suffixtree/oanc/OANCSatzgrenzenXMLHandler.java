@@ -12,7 +12,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author marcel
  *
  */
-public class OANCXMLHandler extends DefaultHandler {
+public class OANCSatzgrenzenXMLHandler extends DefaultHandler {
 	
 	List<OANCXMLSatzgrenze> satzgrenzen = new ArrayList<OANCXMLSatzgrenze>();
 

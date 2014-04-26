@@ -21,6 +21,7 @@ public class OANCXMLParser {
 	public static final String STARTSYMBOL = "^";
 	public static final String TERMINIERSYMBOL="$";
 	public static final String SATZGRENZENDATEISUFFIX="-s";
+	public static final String ANNOTATIONSDATEISUFFIX="-hepple";
 	public static final String WORTTRENNERREGEX = "[\\ \\n\\t\u200B]+";
 	public static final Pattern WORTTRENNERREGEXMUSTER = Pattern.compile(WORTTRENNERREGEX);
 	//public static final String ZEICHENSETZUNGSREGEX = "((?<=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…])|(?=[\\[\\]\\(\\)\\?\\!\\-\\/\\.\\,\\;\\:\\\"\\'\\…]))"; // <String>.split() trennt hiermit Zeichen ab und behaelt sie als Elemente
@@ -28,21 +29,26 @@ public class OANCXMLParser {
 	public static final Pattern SATZZEICHENABTRENNERREGEXMUSTER = Pattern.compile(SATZZEICHENABTRENNERREGEX);
 	public static final String ZUENTFERNENDEZEICHENREGEX = "[^(\\p{L}\\p{M}*+)]*";
 	public static final Pattern ZUENTFERNENDEZEICHENREGEXMUSTER = Pattern.compile(ZUENTFERNENDEZEICHENREGEX);
+	// Annotationsbezeichner
+	public static final String XML_PENNTAG_BEZEICHNER = "msd";
+	public static final String XML_BEGRIFF_BEZEICHNER = "base";
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
+	private File annotationsXMLDatei;
 	
 	public OANCXMLParser() {
 		super();
 	}
 	
 	public OANCXMLParser(File quellDatei) throws IOException {
-		this(quellDatei, null);
+		this(quellDatei, null, null);
 	}
 	
-	public OANCXMLParser(File quellDatei, File satzGrenzenXMLDatei) throws IOException {
+	public OANCXMLParser(File quellDatei, File satzGrenzenXMLDatei, File annotationsXMLDatei) throws IOException {
 		super();
 		this.quellDatei = quellDatei;
 		this.setSatzGrenzenXMLDatei(satzGrenzenXMLDatei);
+		this.setAnnotationsXMLDatei(annotationsXMLDatei);
 	}
 	public File getQuellDatei() {
 		return quellDatei;
@@ -62,6 +68,18 @@ public class OANCXMLParser {
 	}
 	
 	
+	public File getAnnotationsXMLDatei() {
+		return annotationsXMLDatei;
+	}
+
+	public void setAnnotationsXMLDatei(File annotationsXMLDatei) {
+		if (annotationsXMLDatei != null){
+			this.annotationsXMLDatei = annotationsXMLDatei;
+		} else {
+			this.annotationsXMLDatei = new File(quellDatei.getAbsolutePath().substring(0, quellDatei.getAbsolutePath().lastIndexOf('.'))+ANNOTATIONSDATEISUFFIX+".xml");
+		}
+	}
+
 	/**
 	 * Parst die Quell- und Satzgrenzendatei und gibt eine Liste von (Roh)Saetzen zurueck
 	 * @return
@@ -85,7 +103,7 @@ public class OANCXMLParser {
 		// XML-Satzgrenzendatei parsen
 		SAXParserFactory parserFactor = SAXParserFactory.newInstance();
 	    SAXParser parser = parserFactor.newSAXParser();
-	    OANCXMLHandler handler = new OANCXMLHandler();
+	    OANCSatzgrenzenXMLHandler handler = new OANCSatzgrenzenXMLHandler();
 	    InputStream satzgrenzenInputStream = new FileInputStream(satzGrenzenXMLDatei);
 	    parser.parse(satzgrenzenInputStream, handler);
 
@@ -186,6 +204,115 @@ public class OANCXMLParser {
 			ergebnisListe.add(OANCXMLParser.TERMINIERSYMBOL);
 		}
 		
+		// Ergebnisliste zurueckgeben
+		return ergebnisListe;
+	}
+	
+	/**
+	 * Parst die Quell-, Annotations- und Satzgrenzendatei und gibt eine Liste von Saetzen mit annotierten Worten zurueck.
+	 * @return
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 */
+	public List<List<WortAnnotationTupel>> parseQuellDateiMitAnnotationen() throws SAXException, IOException, ParserConfigurationException{
+		
+		// Zugriff auf Dateien pruefen
+		if (!this.quellDatei.canRead()){
+			throw new IOException("Kann Quelldatei nicht lesen: "+this.quellDatei.getAbsolutePath());
+		}
+		if (!this.satzGrenzenXMLDatei.canRead()){
+			throw new IOException("Kann Satzgrenzendatei nicht lesen: "+this.satzGrenzenXMLDatei.getAbsolutePath());
+		}
+		
+		// Liste fuer Ergebnis
+		ArrayList<List<WortAnnotationTupel>> ergebnisListe = new ArrayList<List<WortAnnotationTupel>>();
+		
+		// XML-Satzgrenzendatei parsen
+		SAXParserFactory satzgrenzenParserFactory = SAXParserFactory.newInstance();
+	    SAXParser parser = satzgrenzenParserFactory.newSAXParser();
+	    OANCSatzgrenzenXMLHandler satzgrenzenHandler = new OANCSatzgrenzenXMLHandler();
+	    InputStream satzgrenzenInputStream = new FileInputStream(satzGrenzenXMLDatei);
+	    parser.parse(satzgrenzenInputStream, satzgrenzenHandler);
+		
+		// XML-Annotationsdatei parsen
+		SAXParserFactory annotationsParserFactory = SAXParserFactory.newInstance();
+	    SAXParser annotationsParser = annotationsParserFactory.newSAXParser();
+	    OANCAnnotationsXMLHandler annotationsHandler = new OANCAnnotationsXMLHandler();
+	    InputStream annotationsInputStream = new FileInputStream(annotationsXMLDatei);
+	    annotationsParser.parse(annotationsInputStream, annotationsHandler);
+	    
+	    // Liste der geparsten Wortannotationen (mit deren Position im Text!)
+	    List<OANCXMLAnnotation> annotationsListe = annotationsHandler.getAnnotationen();
+
+	    // Quelldatei oeffnen
+	    FileReader datei = new FileReader(this.quellDatei);
+	    
+	    // Markierung fuer Leselposition in der Quelldatei
+    	int position = 0;
+
+    	// Iterator fuer Wortannotationen
+    	Iterator<OANCXMLAnnotation> annotationen = annotationsListe.iterator();
+    	
+    	// Falls keine Wortannotation vorhanden ist, wird die leere Ergebnisliste zurueckgegeben
+    	if (!annotationen.hasNext()){
+    		// Quelldatei schliessen
+    		datei.close();
+    		// Leere Liste zurueckgeben
+    		return ergebnisListe;
+    	}
+    	
+    	// Erste Wortannotation ermitteln
+    	OANCXMLAnnotation annotation = annotationen.next();
+    	
+	    // Liste der Satzgrenzen durchlaufen
+	    Iterator<OANCXMLSatzgrenze> satzgrenzen = satzgrenzenHandler.getSatzgrenzen().iterator();
+	    while(satzgrenzen.hasNext()){
+	    	
+	    	// Liste fuer neuen Satz
+	    	List<WortAnnotationTupel> satz = new ArrayList<WortAnnotationTupel>();
+	    	
+	    	// Naechste Satzgrenze ermitteln
+	    	OANCXMLSatzgrenze satzgrenze = satzgrenzen.next();
+	    	
+	    	while (annotation != null && annotation.getVon() < satzgrenze.getBis()){
+	    		
+	    		// Laenge des zu lesenden Wortes ermitteln
+		    	int wortlaenge = annotation.getBis() - annotation.getVon();
+		    	
+		    	// Zeichenarray mit entsprechender Laenge erstellen
+		    	char[] wortZeichenArray = new char[wortlaenge];
+	    		
+	    		// Ggf. in der Quelldatei zum Wortanfang springen
+		    	if (annotation.getVon()>position){
+		    		datei.skip(annotation.getVon()-position);
+		    		position = annotation.getVon();
+		    	}
+	    		
+		    	// Zeichen aus Quelldatei in ZeichenArray einlesen
+		    	if (datei.ready() && position<annotation.getBis()){
+		    		datei.read(wortZeichenArray, 0, wortlaenge);
+		    		position = satzgrenze.getBis();
+		    	}
+		    	
+		    	// Zeichenkette umwandeln und internalisieren (letzteres wichtig fuer Minimierung der Speicherauslastung)
+		    	String wortString = String.copyValueOf(wortZeichenArray).intern();
+	    		
+		    	// Annotiertes Wort zum Satz hinzufuegen
+	    		satz.add(new WortAnnotationTupel(wortString,annotation.getAnnotationswerte().get(XML_PENNTAG_BEZEICHNER),annotation.getAnnotationswerte().get(XML_BEGRIFF_BEZEICHNER)));
+	    		
+	    		// Naechstes Wort ermitteln
+	    		annotation = annotationen.next();
+	    	}
+	    	
+	    	// Abgeschlossenen Satz in Ergebnisliste speichern
+	    	ergebnisListe.add(satz);
+	    	
+	    }
+	    
+	    // Quelldatei schliessen
+		datei.close();
+	    
 		// Ergebnisliste zurueckgeben
 		return ergebnisListe;
 	}

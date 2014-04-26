@@ -63,6 +63,9 @@ public class Start {
 		
 		// Option fuer Graphenkommunikation hinzufuegen
 		optionen.addOption("T", true, "Maximale Anzahl an Elementen, die in einer Transaktion an den Graphen uebermittelt werden (Standard 1000).");
+
+		// Option fuer Graphenkommunikation hinzufuegen
+		optionen.addOption("G", true, "Pfad zum Neo4j-Graphen.");
 		
 		
 		
@@ -77,7 +80,7 @@ public class Start {
 		// Ggf. Hilfetext anzeigen
 		if (kommandozeile.hasOption("h")) {
 			HelpFormatter lvFormater = new HelpFormatter();
-			lvFormater.printHelp("java [-d64 -Xms7500m -Xmx7500m] -jar Experiment4.jar <Optionen>", optionen);
+			lvFormater.printHelp("java [-server -d64 -Xms500m -Xmx7500m] -jar Experiment4.jar <Optionen>", optionen);
 			System.exit(0);
 		}
 		
@@ -124,15 +127,22 @@ public class Start {
 				maxBegriffsVerbindungen = Integer.parseInt(kommandozeile.getOptionValue("a"));
 		}
 		
+		// Pfad zur Neo4j-Graphendatei
+		String neo4jPfad = "/home/marcel/opt/neo4j-community-2.0.1/data/graph.db";
+		if(kommandozeile.hasOption("G")) {
+			if (!kommandozeile.getOptionValue("G").isEmpty())
+				neo4jPfad = kommandozeile.getOptionValue("G");
+		}
+		
 		// Startobjekt instanziieren
 		Start start = new Start();
 		
 		// Experiment durchfuehren
-		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen, maxBegriffsVerbindungen);
+		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen, maxBegriffsVerbindungen, neo4jPfad);
 		
 	}
 	
-	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen, int maxBegriffsVerbindungenEingabe) throws Exception{
+	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen, int maxBegriffsVerbindungenEingabe, String neo4jPfad) throws Exception{
 		// Laufzeitinstanz ermitteln
 		Runtime rt = Runtime.getRuntime();
 		
@@ -284,7 +294,7 @@ public class Start {
 		 */
 		
 		// Graph-Datenbank-Klienten instanziieren
-		final Neo4jLokalKlient graph = new Neo4jLokalKlient("/home/marcel/opt/neo4j-community-2.0.1/data/graph.db");
+		final Neo4jLokalKlient graph = new Neo4jLokalKlient(neo4jPfad);
 		
 		// Liste der bereits in der Graphendatenbank angelegten Knoten
 		Map<String,Node> angelegteKnoten = new HashMap<String,Node>();
