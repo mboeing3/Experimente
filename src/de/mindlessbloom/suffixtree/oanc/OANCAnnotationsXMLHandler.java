@@ -17,15 +17,11 @@ import org.xml.sax.helpers.DefaultHandler;
 public class OANCAnnotationsXMLHandler extends DefaultHandler {
 	
 	private List<OANCXMLAnnotation> ergebnisliste = new ArrayList<OANCXMLAnnotation>();
-	private Stack<String> xmlelemente = new Stack<String>();
 	private Stack<OANCXMLAnnotation> annotationen = new Stack<OANCXMLAnnotation>();
 
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
-		
-		// XML-Element auf Stack legen
-		xmlelemente.push(qName);
 		
 		// Pruefen, ob Element eine Annotation beschreibt
 		if (qName.equals("struct")){
@@ -56,9 +52,6 @@ public class OANCAnnotationsXMLHandler extends DefaultHandler {
 	@Override
 	public void endElement(String uri, String localName, String qName)
 			throws SAXException {
-		
-		// Oberstes XML-Element vom Stack entfernen
-		xmlelemente.pop();
 		
 		if (qName.equals("struct")){
 			// Oberste Annotation zur Ergebnisliste hinzufuegen

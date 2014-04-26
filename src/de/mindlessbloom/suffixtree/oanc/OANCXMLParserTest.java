@@ -10,18 +10,21 @@ import java.util.List;
 import org.junit.Test;
 
 public class OANCXMLParserTest {
+	
+	private static String DATEIPFAD = "/home/marcel/data/written_1/journal/verbatim/VOL15_1.txt";
+	private static String SGDATEIPFAD = "/home/marcel/data/written_1/journal/verbatim/VOL15_1-s.xml";
 
 	@Test
 	public void testOANCXMLParserFile() {
 		OANCXMLParser p = null;
 		try {
-			p = new OANCXMLParser(new File("/Users/marcel/Downloads/OANC/data/written_1/fiction/eggan/TheStory.txt"));
+			p = new OANCXMLParser(new File(DATEIPFAD));
 		} catch (IOException e) {
 			fail(e.toString());
 		}
 		
 		System.out.println("Satzgrenzendatei: "+p.getSatzGrenzenXMLDatei().getAbsolutePath());
-		assertTrue(p.getSatzGrenzenXMLDatei().getAbsolutePath().equals("/Users/marcel/Downloads/OANC/data/written_1/fiction/eggan/TheStory-s.xml"));
+		assertTrue(p.getSatzGrenzenXMLDatei().getAbsolutePath().equals(SGDATEIPFAD));
 		
 	}
 
@@ -29,13 +32,33 @@ public class OANCXMLParserTest {
 	public void testParseQuellDatei() {
 		OANCXMLParser p = null;
 		try {
-			p = new OANCXMLParser(new File("/Users/marcel/Downloads/OANC/data/written_1/fiction/eggan/TheStory.txt"));
+			p = new OANCXMLParser(new File(DATEIPFAD));
 			List<String> saetze = p.parseQuellDatei();
 			
 			// Es sind in der Satzgrenzendatei 4460 Saetze ausgewiesen.
-			assertTrue(saetze.size()==4460);
+			assertTrue(saetze.size()==713);
 			
 		} catch (Exception e) {
+			fail(e.toString());
+		}
+	}
+
+	@Test
+	public void testParseQuellDateiAlternativ() {
+		OANCXMLParser p = null;
+		try {
+			System.out.println("Erwartet werden 713 Saetze.");
+			p = new OANCXMLParser(new File(DATEIPFAD));
+			
+			List<List<WortAnnotationTupel>> saetze = p.parseQuellDateiMitAnnotationen(true);
+			
+			// Es sind in der Satzgrenzendatei 4460 Saetze ausgewiesen.
+			System.out.println(saetze.size());
+			
+			assertTrue(saetze.size()==713);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 			fail(e.toString());
 		}
 	}
@@ -44,7 +67,7 @@ public class OANCXMLParserTest {
 	public void testBereinigeUndSegmentiereSatz() {
 		OANCXMLParser p = null;
 		try {
-			p = new OANCXMLParser(new File("/Users/marcel/Downloads/OANC/data/written_1/fiction/eggan/TheStory.txt"));
+			p = new OANCXMLParser(new File(DATEIPFAD));
 			
 			String rohsatz = " WortA-WortB: \n\t\t (WortC, WortD),\nWortE  WortF.  ";
 			List<String> wortliste = p.bereinigeUndSegmentiereSatz(rohsatz, true, true, true, true);
