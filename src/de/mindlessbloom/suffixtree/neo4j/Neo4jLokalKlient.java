@@ -19,7 +19,7 @@ public class Neo4jLokalKlient {
 	public static final String BEZEICHNER_NAME = "Label";
 	public static final String BEZEICHNER_HAEUFIGKEIT = "Vorkommenshaeufigkeit";
 	public static final String BEZEICHNER_ANNOTATION = "Grammatische Klassen";
-	public static final String ANNOTATIONEN_TRENNZEICHEN = ";";
+	//public static final String ANNOTATIONEN_TRENNZEICHEN = ";";
 	private int transaktionsschwelle = 1000;
 	private String datenbankpfad;
 	private static GraphDatabaseService graphDb = null;
@@ -77,14 +77,12 @@ public class Neo4jLokalKlient {
 		
 		// Ggf Annotationen hinzufuegen
 		if (annotationsListe != null && !annotationsListe.isEmpty()){
-			// Annotationen in String umwandeln
-			StringBuffer annotationsString = new StringBuffer();
 			Iterator<String> annotationen = annotationsListe.iterator();
 			while(annotationen.hasNext()){
-				annotationsString.append(annotationen.next()+ANNOTATIONEN_TRENNZEICHEN);
+				// Annotationen zum Knoten hinzufuegen
+				knoten.getTextwerte().put(annotationen.next(), "1");
 			}
-			// Annotationen zum Knoten hinzufuegen
-			knoten.getTextwerte().put(BEZEICHNER_ANNOTATION, annotationsString.toString());
+			
 		}
 		
 		knotenWarteschlange.add(knoten);
