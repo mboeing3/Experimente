@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -15,10 +16,14 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 public class Neo4jLokalKlient {
 	
+	public static final String BEZEICHNER_NAME = "Label";
+	public static final String BEZEICHNER_HAEUFIGKEIT = "Vorkommenshaeufigkeit";
+	public static final String BEZEICHNER_ANNOTATION = "Grammatische Klassen";
+	public static final String ANNOTATIONEN_TRENNZEICHEN = ";";
 	private int transaktionsschwelle = 1000;
 	private String datenbankpfad;
 	private static GraphDatabaseService graphDb = null;
-	private List<NameHaeufigkeitsTupel> knotenWarteschlange = new ArrayList<NameHaeufigkeitsTupel>();
+	private List<AnnotierterKnoten> knotenWarteschlange = new ArrayList<AnnotierterKnoten>();
 	private List<KnotenVerknuepfungsTripel> kantenWarteschlange = new ArrayList<KnotenVerknuepfungsTripel>();
 	private RelationshipType kantenTyp = new Uebereinstimmungsquotientenverbindungstyp();
 
@@ -56,7 +61,33 @@ public class Neo4jLokalKlient {
 	 * @return Liste der erstellten Knoten oder Null
 	 */
 	public Map<String,Node> fuegeKnotenErstellungZurWarteschlangeHinzu(String knotenName, long haeufigkeit){
-		knotenWarteschlange.add(new NameHaeufigkeitsTupel(knotenName,haeufigkeit));
+		return this.fuegeKnotenErstellungZurWarteschlangeHinzu(knotenName, haeufigkeit, null);
+	}
+	
+	/**
+	 * Fuegt einen Knotennamen der Transaktionswarteschlange hinzu. Ist die Warteschlange voll,
+	 * werden die enthaltenen Knoten erstellt und als Liste zurueckgegeben, ansonsten null. 
+	 * @param knotenName Name des zu erstellenden Knotens
+	 * @param annotationsListe Sortierte Liste der Annotationen; darf null sein.
+	 * @return Liste der erstellten Knoten oder Null
+	 */
+	public Map<String,Node> fuegeKnotenErstellungZurWarteschlangeHinzu(String knotenName, long haeufigkeit, SortedSet<String> annotationsListe){
+		AnnotierterKnoten knoten = new AnnotierterKnoten(knotenName);
+		knoten.getZahlenwerte().put(BEZEICHNER_HAEUFIGKEIT, haeufigkeit);
+		
+		// Ggf Annotationen hinzufuegen
+		if (annotationsListe != null && !annotationsListe.isEmpty()){
+			// Annotationen in String umwandeln
+			StringBuffer annotationsString = new StringBuffer();
+			Iterator<String> annotationen = annotationsListe.iterator();
+			while(annotationen.hasNext()){
+				annotationsString.append(annotationen.next()+ANNOTATIONEN_TRENNZEICHEN);
+			}
+			// Annotationen zum Knoten hinzufuegen
+			knoten.getTextwerte().put(BEZEICHNER_ANNOTATION, annotationsString.toString());
+		}
+		
+		knotenWarteschlange.add(knoten);
 		Map<String,Node> erstellteKnoten;
 		if (this.transaktionsschwelle >0 && knotenWarteschlange.size() >= this.transaktionsschwelle){
 			erstellteKnoten = this.starteTransaktionKnoten();
@@ -76,13 +107,26 @@ public class Neo4jLokalKlient {
 		 try
 		 {
 			// Warteschlange durchlaufen
-			 Iterator<NameHaeufigkeitsTupel> knotenTupel = this.knotenWarteschlange.iterator();
-			 while(knotenTupel.hasNext()){
-				 NameHaeufigkeitsTupel tupel = knotenTupel.next();
+			 Iterator<AnnotierterKnoten> annotierteKnoten = this.knotenWarteschlange.iterator();
+			 while(annotierteKnoten.hasNext()){
+				 AnnotierterKnoten knoten = annotierteKnoten.next();
 				 Node n = graphDb.createNode();
-			     n.setProperty("Label", tupel.getName());
-			     n.setProperty("Haeufigkeit", tupel.getVorkommensHaufigkeit());
-			     uebertrageneElemente.put(tupel.getName(),n);
+			     n.setProperty(BEZEICHNER_NAME, knoten.getName());
+			     
+			     // Annotationen des Knotens durchlaufen
+			     Iterator<String> zahlenwerte = knoten.getZahlenwerte().keySet().iterator();
+			     while (zahlenwerte.hasNext()){
+			    	 String wertBezeichner = zahlenwerte.next();
+			    	 n.setProperty(wertBezeichner, knoten.getZahlenwerte().get(wertBezeichner));
+			     }
+			     Iterator<String> textwerte = knoten.getTextwerte().keySet().iterator();
+			     while (textwerte.hasNext()){
+			    	 String wertBezeichner = textwerte.next();
+			    	 n.setProperty(wertBezeichner, knoten.getTextwerte().get(wertBezeichner));
+			     }
+			     
+			     // Knoten in Liste der uebertragenen Elemente einfuegen
+			     uebertrageneElemente.put(knoten.getName(),n);
 			 }
 		 
 		     tx.success();

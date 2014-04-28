@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment05;
+package de.mindlessbloom.suffixtree.experiment06;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +25,7 @@ import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
 import de.mindlessbloom.suffixtree.neo4j.Neo4jLokalKlient;
 import de.mindlessbloom.suffixtree.oanc.OANC;
 import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
+import de.mindlessbloom.suffixtree.oanc.WortAnnotationTupel;
 
 
 public class Start {
@@ -80,7 +83,7 @@ public class Start {
 		// Ggf. Hilfetext anzeigen
 		if (kommandozeile.hasOption("h")) {
 			HelpFormatter lvFormater = new HelpFormatter();
-			lvFormater.printHelp("java [-server -d64 -Xms500m -Xmx7500m] -jar Experiment5.jar <Optionen>", optionen);
+			lvFormater.printHelp("java [-server -d64 -Xms500m -Xmx7500m] -jar Experiment6.jar <Optionen>", optionen);
 			System.exit(0);
 		}
 		
@@ -172,7 +175,7 @@ public class Start {
 		OANCXMLParser oancParser = new OANCXMLParser();
 
 		// Liste fuer Ergebnis erstellen
-		ArrayList<List<String>> satzListe = new ArrayList<List<String>>();
+		List<List<WortAnnotationTupel>> satzListe = new ArrayList<List<WortAnnotationTupel>>();
 
 		// Zaehler fur Korpusdateien (Kosmetik)
 		int korpusDateiZaehler = 0;
@@ -194,22 +197,13 @@ public class Start {
 
 			// Aktuelle Korpusdatei als Quelle fuer Parser setzen
 			oancParser.setQuellDatei(korpusDatei);
-
-			// Satzgrenzendatei auf null setzen; der oancParser ermittelt dann
-			// automatisch ihren Namen
+			
+			// Satzgrenzen- und Annotationsdatei auf null setzen; der oancParser ermittelt dann automatisch ihren Namen
 			oancParser.setSatzGrenzenXMLDatei(null);
+			oancParser.setAnnotationsXMLDatei(null);
 
-			// Datei parsen und Rohsaetze ermitteln
-			List<String> rohsatzListe = oancParser.parseQuellDatei();
-
-			// Liste der Rohsaetze durchlaufen
-			Iterator<String> rohsaetze = rohsatzListe.iterator();
-			while (rohsaetze.hasNext()) {
-
-				// Rohsatz bereinigen und zu Ergebnisliste hinzufuegen
-				satzListe.add(oancParser.bereinigeUndSegmentiereSatz(
-						rohsaetze.next(), false, true, true, true));
-			}
+			// Datei parsen und Saetze zur Ergebnisliste hinzufuegen
+			satzListe.addAll(oancParser.parseQuellDateiMitAnnotationen(true));
 		}
 
 		// Meldung ausgeben
@@ -222,7 +216,46 @@ public class Start {
 						+ (rt.totalMemory() - rt.freeMemory()));
 
 		/**
-		 * Datenstrukturen erstellen
+		 * Map mit allen Begriffen und deren Annotationen erstellen
+		 */
+		// Map fuer Orthographische Repraesentation - Annotationen
+		Map<String,SortedSet<String>> wortAnnotationsMap = new HashMap<String,SortedSet<String>>();
+		
+		// Satzliste durchlaufen
+		Iterator<List<WortAnnotationTupel>> saetze = satzListe.iterator();
+		while (saetze.hasNext()){
+			
+			// Liste der Worte des Satzes ermitteln
+			List<WortAnnotationTupel> wortListe = saetze.next();
+			
+			// Wortliste durchlaufen
+			Iterator<WortAnnotationTupel> worte = wortListe.iterator();
+			while(worte.hasNext()){
+				
+				// Naechstes Wort ermitteln
+				WortAnnotationTupel wort = worte.next();
+				
+				// Pruefen, ob Wort bereits in Map existiert
+				if (wortAnnotationsMap.containsKey(wort.getWort())){
+					
+					// Wort existiert - Annotation zur existierenden Liste hinzufuegen
+					wortAnnotationsMap.get(wort.getWort()).add(wort.getAnnotation());
+					
+				} else {
+					
+					// Wort existiert noch nicht - neue sortierte Liste fuer Annotationen anlegen
+					TreeSet<String> annotationen = new TreeSet<String>();
+					annotationen.add(wort.getAnnotation());
+					wortAnnotationsMap.put(wort.getWort(), annotationen);
+					
+				}
+			}
+		}
+		
+		/**
+		 * Datenstrukturen erstellen. Zur besseren Uebersichtlichkeit werden die
+		 * Arbeitsschritte nicht schon in der obigen Schleife durchgefuehrt,
+		 * sondern getrennt davon in einer eigenen.
 		 */
 
 		// Meldung ausgeben
@@ -239,8 +272,8 @@ public class Start {
 		// Zaehler fur Saetze (Kosmetik)
 		int satzZaehler = 0;
 
-		Iterator<List<String>> saetze = satzListe.iterator();
-		while (saetze.hasNext()) {
+		Iterator<List<WortAnnotationTupel>> saetze2 = satzListe.iterator();
+		while (saetze2.hasNext()) {
 
 			satzZaehler++;
 
@@ -256,12 +289,16 @@ public class Start {
 								+ (rt.totalMemory() - rt.freeMemory()));
 			}
 
-			List<String> satz = saetze.next();
-			baumBauer.baueBaum(satz.toArray(new String[satz.size()]), wurzel,
-					null, false, maximaleBaumTiefe);
-
-			// Speicher freigeben
-			satz = null;
+			// Naechste Wort-Annotations-Liste ermitteln
+			List<WortAnnotationTupel> satz = saetze2.next();
+			
+			// In String-Array wandeln
+			String[] wortArray = new String[satz.size()];
+			for (int i=0; i<wortArray.length; i++){
+				wortArray[i] = satz.get(i).getWort();
+			}
+			
+			baumBauer.baueBaum(wortArray, wurzel,null, false, maximaleBaumTiefe);
 		}
 
 		// Meldung ausgeben
@@ -342,7 +379,7 @@ public class Start {
 				zweige.add(kind);
 				
 				// Knoten in Graphen einfuegen
-				Map<String,Node> knotenListe = graph.fuegeKnotenErstellungZurWarteschlangeHinzu(kind.getName(),kind.getZaehler());
+				Map<String,Node> knotenListe = graph.fuegeKnotenErstellungZurWarteschlangeHinzu(kind.getName(),kind.getZaehler(),wortAnnotationsMap.get(kind.getName()));
 				if (knotenListe != null)
 				angelegteKnoten.putAll(knotenListe);
 			}
