@@ -69,6 +69,9 @@ public class Start {
 
 		// Option fuer Graphenkommunikation hinzufuegen
 		optionen.addOption("G", true, "Pfad zum Neo4j-Graphen.");
+
+		// Option fuer Vergleiche hinzufuegen
+		optionen.addOption("P", false, "Auch Praefixbaeume erstellen und Vergleichen.");
 		
 		
 		
@@ -137,15 +140,18 @@ public class Start {
 				neo4jPfad = kommandozeile.getOptionValue("G");
 		}
 		
+		// Nur den mit dem Vergleichswort beginnenden Zweig des jeweiligen Suffixbaumes zum Vergleich heranziehen.
+		boolean praefixBaumErstellen = (kommandozeile.hasOption("Z") && kommandozeile.hasOption("P"));
+		
 		// Startobjekt instanziieren
 		Start start = new Start();
 		
 		// Experiment durchfuehren
-		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen, maxBegriffsVerbindungen, neo4jPfad);
+		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen, maxBegriffsVerbindungen, neo4jPfad, praefixBaumErstellen);
 		
 	}
 	
-	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen, int maxBegriffsVerbindungenEingabe, String neo4jPfad) throws Exception{
+	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen, int maxBegriffsVerbindungenEingabe, String neo4jPfad, boolean praefixBaumErstellen) throws Exception{
 		// Laufzeitinstanz ermitteln
 		Runtime rt = Runtime.getRuntime();
 		
@@ -222,11 +228,11 @@ public class Start {
 		Map<String,SortedSet<String>> wortAnnotationsMap = new HashMap<String,SortedSet<String>>();
 		
 		// Satzliste durchlaufen
-		Iterator<List<WortAnnotationTupel>> saetze = satzListe.iterator();
-		while (saetze.hasNext()){
+		Iterator<List<WortAnnotationTupel>> satzlistenIterator1 = satzListe.iterator();
+		while (satzlistenIterator1.hasNext()){
 			
 			// Liste der Worte des Satzes ermitteln
-			List<WortAnnotationTupel> wortListe = saetze.next();
+			List<WortAnnotationTupel> wortListe = satzlistenIterator1.next();
 			
 			// Wortliste durchlaufen
 			Iterator<WortAnnotationTupel> worte = wortListe.iterator();
@@ -260,11 +266,15 @@ public class Start {
 
 		// Meldung ausgeben
 		Logger.getLogger(Start.class.getCanonicalName()).info(
-				"Erstelle Suffixbaum.");
+				"Erstelle Suffixbaum (und ggf. Praefixbaum).");
 
-		// Wurzelknoten erstellen
-		final Knoten wurzel = new Knoten();
-		wurzel.setName("^");
+		// Wurzelknoten fuer Suffixbaum erstellen
+		final Knoten suffixBaumWurzel = new Knoten();
+		suffixBaumWurzel.setName("^");
+
+		// Wurzelknoten fuer Praefixbaum erstellen
+		final Knoten praefixBaumWurzel = new Knoten();
+		praefixBaumWurzel.setName("$");
 
 		// BaumBauer erstellen
 		BaumBauer baumBauer = new BaumBauer();
@@ -272,8 +282,9 @@ public class Start {
 		// Zaehler fur Saetze (Kosmetik)
 		int satzZaehler = 0;
 
-		Iterator<List<WortAnnotationTupel>> saetze2 = satzListe.iterator();
-		while (saetze2.hasNext()) {
+		// Liste der Saetze durchlaufen
+		Iterator<List<WortAnnotationTupel>> satzlistenIterator2 = satzListe.iterator();
+		while (satzlistenIterator2.hasNext()) {
 
 			satzZaehler++;
 
@@ -290,7 +301,7 @@ public class Start {
 			}
 
 			// Naechste Wort-Annotations-Liste ermitteln
-			List<WortAnnotationTupel> satz = saetze2.next();
+			List<WortAnnotationTupel> satz = satzlistenIterator2.next();
 			
 			// In String-Array wandeln
 			String[] wortArray = new String[satz.size()];
@@ -298,7 +309,13 @@ public class Start {
 				wortArray[i] = satz.get(i).getWort();
 			}
 			
-			baumBauer.baueBaum(wortArray, wurzel,null, false, maximaleBaumTiefe);
+			// Satz in Suffixbaum einfuegen
+			baumBauer.baueBaum(wortArray, suffixBaumWurzel,null, false, maximaleBaumTiefe);
+			
+			// Ggf. Satz auch in Praefixbaum einfuegen
+			if (praefixBaumErstellen){
+				baumBauer.baueBaum(wortArray, praefixBaumWurzel,null, true, maximaleBaumTiefe);
+			}
 		}
 
 		// Meldung ausgeben
@@ -322,12 +339,22 @@ public class Start {
 				"Belegter Hauptspeicher: "
 						+ (rt.totalMemory() - rt.freeMemory()));
 
-		// Speicherinfo ausgeben
+		// SBauminfo ausgeben
+		if (praefixBaumErstellen){
+			Logger.getLogger(Start.class.getCanonicalName()).info(
+					"Praefixbaumgroesse: " + praefixBaumWurzel.getZaehler());
+		}
 		Logger.getLogger(Start.class.getCanonicalName()).info(
-				"Suffixbaumgroesse: " + wurzel.getZaehler());
+				"Suffixbaumgroesse: " + suffixBaumWurzel.getZaehler());
+		
+		// Die Anzahl der Zweige von Suffix- und Praefixbaum sollte gleich sein
+		if (praefixBaumErstellen && suffixBaumWurzel.getKinder().size() != praefixBaumWurzel.getKinder().size()){
+			Logger.getLogger(Start.class.getCanonicalName()).warning("Die Anzahl der Zweige von Suffix- und Praefixbaum ist nicht gleich (S:"+suffixBaumWurzel.getKinder().size()+", P:"+praefixBaumWurzel.getKinder().size()+") - ich kann nicht fortfahren, Entschuldigung.");
+			System.exit(1);
+		}
 		
 		/*
-		 *  Suffixbaumzweige vergleichen und zum Graphen hinzufuegen
+		 *  Suffixbaumzweige (u. ggf. Praefixbaumzweige) vergleichen und zum Graphen hinzufuegen
 		 */
 		
 		// Graph-Datenbank-Klienten instanziieren
@@ -337,22 +364,21 @@ public class Start {
 		Map<String,Node> angelegteKnoten = new HashMap<String,Node>();
 		
 		// Meldung anzeigen
-		Logger.getLogger(Start.class.getCanonicalName()).info("Der Suffixbaum hat "+wurzel.getKinder().size()+" Zweige.");
-		
+		Logger.getLogger(Start.class.getCanonicalName()).info("Der Suffixbaum hat "+suffixBaumWurzel.getKinder().size()+" Zweige.");
 		
 		
 		// Map der Suffixbaumzweige in Liste wandeln
 		final List<Knoten> zweige = new ArrayList<Knoten>();
 		
 		// Fortschritt nachhalten
-		final Fortschritt knotenInGraphenFortschritt = new Fortschritt(wurzel.getKinder().size());
+		final Fortschritt knotenInGraphenFortschritt = new Fortschritt(suffixBaumWurzel.getKinder().size());
 		
 		// Fortschrittsanzeigeprozess
 		Thread fortschrittsAnzeigerKnotenZuGraphen = new Thread() {
 			@Override
 			public void run() {
 				try {
-					while (wurzel.getKinder().size()>0){
+					while (suffixBaumWurzel.getKinder().size()>0){
 						Logger.getLogger(Start.class.getCanonicalName()).info(knotenInGraphenFortschritt.getVerarbeitet()+"/"+knotenInGraphenFortschritt.getVerbleibend());
 						Thread.sleep(5000);
 					}
@@ -364,14 +390,14 @@ public class Start {
 		};
 		fortschrittsAnzeigerKnotenZuGraphen.start();
 		
-		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
+		Iterator<String> kinder = suffixBaumWurzel.getKinder().keySet().iterator();
 		while(kinder.hasNext()){
 			
 			// Namen des naechsten Kindelements ermitteln 
 			String kindName = kinder.next();
 			
 			// Knoten ermitteln
-			Knoten kind = wurzel.getKinder().get(kindName);
+			Knoten kind = suffixBaumWurzel.getKinder().get(kindName);
 			
 			// Pruefen, ob wortvorkommen ueberhalb des Schwellwerts liegen
 			if (kind.getZaehler() > minWortvorkommen){
@@ -391,7 +417,7 @@ public class Start {
 		angelegteKnoten.putAll(graph.starteTransaktionKnoten());
 		
 		// Werte aus Map loeschen
-		wurzel.getKinder().clear();
+		suffixBaumWurzel.getKinder().clear();
 		
 		
 		// Berechnungen fuer Fortschrittsanzeige
@@ -444,7 +470,13 @@ public class Start {
 					continue;
 
 				// Neuen Vergleichsprozess instanziieren und an Exekutor uebergeben
-				Runnable prozess = new VergleichsProzess(schwellwert, knoten, vergleichsKnoten, verknuepfungen, fortschritt);
+				Runnable prozess;
+				if (praefixBaumErstellen){
+					prozess = new VergleichsProzess(schwellwert, knoten, vergleichsKnoten, praefixBaumWurzel.getKinder().get(knoten.getName()), praefixBaumWurzel.getKinder().get(vergleichsKnoten.getName()), verknuepfungen, fortschritt);
+				} else {
+					prozess = new VergleichsProzess(schwellwert, knoten, vergleichsKnoten, verknuepfungen, fortschritt);
+				}
+				
 		        exekutor.execute(prozess);
 			}
 			
