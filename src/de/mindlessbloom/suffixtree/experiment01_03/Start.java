@@ -135,9 +135,15 @@ public class Start {
 		
 		// Maximale Entfernung des Kontextes vom Vergleichswort, unter derer er noch verglichen wird (-1 = ignorieren).
 		int maximaleKontextEntfernungVonWort = -1;
+		if(kommandozeile.hasOption("M")) {
+			maximaleKontextEntfernungVonWort = Integer.parseInt(kommandozeile.getOptionValue("M"));
+		}
 		
 		// Exponent der Ebenenzahl, mit der die Vergleichsergebnisse multipliziert werden ( 0 = kein Effekt; <0 = Wertung geringer, je weiter von Vergleichswort entfernt; >0 dito hoeher )
 		double ebenenFaktorExponent = 0d;
+		if(kommandozeile.hasOption("E")) {
+			ebenenFaktorExponent = Double.parseDouble(kommandozeile.getOptionValue("E"));
+		}
 		
 		// Steuert, ob obiger Ebenenfaktor nur auf die Trefferknoten angewandt werden soll.
 		boolean ebenenFaktorNurAufTrefferAnwenden = kommandozeile.hasOption("T");
