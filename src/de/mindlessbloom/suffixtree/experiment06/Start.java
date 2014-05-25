@@ -115,7 +115,7 @@ public class Start {
 		// Schwellwert fuer Graphenkonstruktion
 		Double schwellwert = 0.1d;
 		if(kommandozeile.hasOption("s")) {
-			if (Double.parseDouble(kommandozeile.getOptionValue("s")) > 0.0)
+			if (Double.parseDouble(kommandozeile.getOptionValue("s")) >= 0.0)
 				schwellwert = Double.parseDouble(kommandozeile.getOptionValue("s"));
 		}
 		
