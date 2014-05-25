@@ -50,7 +50,7 @@ public class Start {
 		optionen.addOption("p", true, "Anzahl der gleichzeitig auszufuehrenden Prozesse (Standard: 4)");
 		
 		// Option fuer Vergleiche hinzufuegen
-		optionen.addOption("t", false, "Nur Trefferknoten als Vergleichsbaeume verwenden.");
+		//optionen.addOption("t", false, "Nur Trefferknoten als Vergleichsbaeume verwenden.");
 		
 		// Option fuer Hilfstext anzeigen
 		optionen.addOption("h", false, "Gibt Information zur Benutzung des Programms aus.");
@@ -110,7 +110,7 @@ public class Start {
 			gleichzeitigeProzesse = Integer.parseInt(kommandozeile.getOptionValue("p"));
 		}
 		
-		boolean behalteNurTreffer = kommandozeile.hasOption("t");
+		//boolean behalteNurTreffer = kommandozeile.hasOption("t");
 		
 		// Schwellwert fuer Graphenkonstruktion
 		Double schwellwert = 0.1d;
@@ -147,11 +147,11 @@ public class Start {
 		Start start = new Start();
 		
 		// Experiment durchfuehren
-		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, behalteNurTreffer, schwellwert, minWortvorkommen, maxBegriffsVerbindungen, neo4jPfad, praefixBaumErstellen);
+		start.experiment(oancSpeicherorte, maximaleBaumTiefe, gleichzeitigeProzesse, schwellwert, minWortvorkommen, maxBegriffsVerbindungen, neo4jPfad, praefixBaumErstellen);
 		
 	}
 	
-	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, boolean behalteNurTreffer, Double schwellwertEingabe, int minWortvorkommen, int maxBegriffsVerbindungenEingabe, String neo4jPfad, boolean praefixBaumErstellen) throws Exception{
+	public void experiment(String[] oancSpeicherorte, int maximaleBaumTiefe, int gleichzeitigeProzesse, Double schwellwertEingabe, int minWortvorkommen, int maxBegriffsVerbindungenEingabe, String neo4jPfad, boolean praefixBaumErstellen) throws Exception{
 		// Laufzeitinstanz ermitteln
 		Runtime rt = Runtime.getRuntime();
 		
