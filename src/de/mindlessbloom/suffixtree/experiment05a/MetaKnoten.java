@@ -1,9 +1,9 @@
-package de.mindlessbloom.suffixtree.experiment04;
+package de.mindlessbloom.suffixtree.experiment05a;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
 
 public class MetaKnoten {
 	

@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment04;
+package de.mindlessbloom.suffixtree.experiment05a;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -12,9 +12,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.ubiety.ubigraph.UbigraphClient;
 
-import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
-import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
+import de.mindlessbloom.suffixtree.experiment01_04.BaumBauer;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.KnotenKomparator;
 import de.mindlessbloom.suffixtree.junggraph.GraphenPlotter;
 import de.mindlessbloom.suffixtree.oanc.OANC;
 import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;

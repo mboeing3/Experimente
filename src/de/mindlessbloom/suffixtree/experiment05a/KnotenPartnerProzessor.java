@@ -1,12 +1,12 @@
-package de.mindlessbloom.suffixtree.experiment04;
+package de.mindlessbloom.suffixtree.experiment05a;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldeProzess;
 import de.mindlessbloom.nebenlaeufigkeit.RueckmeldungsEmpfaenger;
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
-import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.KnotenKomparator;
 
 /**
  * Ermittelt den am besten passendsten (Meta)Knoten aus einem Pool und gibt

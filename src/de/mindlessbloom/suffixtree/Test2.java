@@ -10,8 +10,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 
-import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.BaumBauer;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
 import de.mindlessbloom.suffixtree.oanc.OANC;
 import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
 

@@ -5,7 +5,7 @@ import java.awt.Paint;
 
 import org.apache.commons.collections15.Transformer;
 
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
 
 public class RotGruenTransformer implements Transformer<Knoten,Paint> {
 	

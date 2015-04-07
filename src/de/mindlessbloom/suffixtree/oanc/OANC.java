@@ -17,7 +17,7 @@ public class OANC {
 
 	private String[] oancSpeicherorte = new String[]{"/Users/marcel/Downloads/OANC/data/written_1/","/Users/marcel/Downloads/OANC/data/written_2/"};
 	private FileFilter verzeichnisFilter = new VerzeichnisFilter();
-	private FileFilter quellDateiFilter = new RegAusdruckDateiFilter(".+\\.txt");
+	private FileFilter quellDateiFilter = new RegAusdruckDateiFilter(".+\\.txt$");
 	
 	public String[] getOancSpeicherorte() {
 		return oancSpeicherorte;

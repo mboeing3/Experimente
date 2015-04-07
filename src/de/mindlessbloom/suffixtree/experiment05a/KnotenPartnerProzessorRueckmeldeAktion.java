@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment04;
+package de.mindlessbloom.suffixtree.experiment05a;
 
 import java.util.List;
 import java.util.logging.Logger;

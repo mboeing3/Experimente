@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment01_03;
+package de.mindlessbloom.suffixtree.experiment01_04;
 
 import java.util.Comparator;
 

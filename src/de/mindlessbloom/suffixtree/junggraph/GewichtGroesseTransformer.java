@@ -6,7 +6,7 @@ import java.awt.geom.Ellipse2D;
 
 import org.apache.commons.collections15.Transformer;
 
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
 
 public class GewichtGroesseTransformer implements Transformer<Knoten,Shape> {
 	

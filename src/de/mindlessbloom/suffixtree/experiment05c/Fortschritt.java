@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment06;
+package de.mindlessbloom.suffixtree.experiment05c;
 
 class Fortschritt {
 	private long verbleibend;

@@ -1,9 +1,9 @@
-package de.mindlessbloom.suffixtree.experiment06;
+package de.mindlessbloom.suffixtree.experiment05c;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
-import de.mindlessbloom.suffixtree.experiment01_03.KnotenKomparator;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.KnotenKomparator;
 
 public class VergleichsProzess implements Runnable {
 

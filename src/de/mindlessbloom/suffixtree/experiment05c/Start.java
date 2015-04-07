@@ -1,4 +1,4 @@
-package de.mindlessbloom.suffixtree.experiment06;
+package de.mindlessbloom.suffixtree.experiment05c;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,8 +20,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.neo4j.graphdb.Node;
 
-import de.mindlessbloom.suffixtree.experiment01_03.BaumBauer;
-import de.mindlessbloom.suffixtree.experiment01_03.Knoten;
+import de.mindlessbloom.suffixtree.experiment01_04.BaumBauer;
+import de.mindlessbloom.suffixtree.experiment01_04.Knoten;
 import de.mindlessbloom.suffixtree.neo4j.Neo4jLokalKlient;
 import de.mindlessbloom.suffixtree.oanc.OANC;
 import de.mindlessbloom.suffixtree.oanc.OANCXMLParser;
