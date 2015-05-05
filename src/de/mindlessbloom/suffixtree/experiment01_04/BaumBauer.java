@@ -512,5 +512,98 @@ public class BaumBauer {
 		// Anzahl der gefundenen Wortvorkommen zurueckgeben
 		return vorkommenGefunden;
 	}
+	
+	/**
+	 * Filtert eine Satzliste (Liste einer Liste von Strings) anhand eines Wortfilters und erstellt im uebergebenen Knoten einen Baum.
+	 * @param wortTyp
+	 * @param satzListe
+	 * @param wf
+	 * @param wurzel
+	 * @param praefixwurzel
+	 * @param praefixBaumErstellen
+	 * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes, inklusive des Wurzelknotens (<0 = ignorieren)
+	 * @param vergleichsworteNichtInBaumMitAufnehmen Schliesst die Vergleichsworte von den konstruierten Baeumen aus (Eingabesaetze werden entsprechend gekuerzt). 
+	 * @return Anzahl der in den Saetzen gefundenen Wortvorkommen. 
+	 */
+	public int baueBaumAusSaetzenMitWorttyp(String wortTyp,
+			List<List<String>> satzListe, WortFilter wf, Knoten wurzel, Knoten praefixwurzel,
+			boolean praefixBaumErstellen, boolean ausfuehrlicheFortschrittsMeldungen, int maxLaenge, boolean vergleichsworteNichtInBaumMitAufnehmen) {
+		// Saetze aus Korpus durchlaufen, Treffer mitzaehlen (fuer Anzeige)
+		int saetzeDurchlaufen = 0;
+		int saetzeGefunden = 0;
+		int vorkommenGefunden = 0;
+		Iterator<List<String>> saetze = satzListe.iterator();
+		while (saetze.hasNext()) {
+
+			// Naechsten Satz ermitteln
+			List<String> satz = saetze.next();
+
+			// Pruefen, ob WortFilter greift
+			if (wf.hatWort(satz)) {
+
+				// Ermitteln, an welchen Stellen im Satz das Vergleichswort
+				// vorkommt
+				Integer[] vergleichsWortIndices = wf.getWortIndices(satz);
+
+				// Anzahl der gefundenen Vorkommen mitzaehlen
+				vorkommenGefunden += vergleichsWortIndices.length;
+
+				// Indices durchlaufen
+				for (int j = 0; j < vergleichsWortIndices.length; j++) {
+					// Satz in Array konvertieren
+					String[] satzArray = satz.toArray(new String[satz.size()]);
+					// Satz in den Baum/Graphen hineinbauen
+					int index = vergleichsWortIndices[j];
+					if (vergleichsworteNichtInBaumMitAufnehmen)
+						index = vergleichsWortIndices[j];
+					if (index<satzArray.length)
+						this.baueBaum(Arrays.copyOfRange(satzArray,
+								index, satzArray.length),
+								wurzel, null, false, maxLaenge);
+					// Ggf. Satz ebenfalls in den Praefixbaum/-graphen
+					// hineinbauen
+					index = vergleichsWortIndices[j]+1;
+					if (vergleichsworteNichtInBaumMitAufnehmen)
+						index = vergleichsWortIndices[j];
+					if (index>=0)
+						if (praefixwurzel != null && praefixBaumErstellen) {
+							this.baueBaum(Arrays.copyOfRange(satzArray, 0,
+									index), praefixwurzel,
+									null, true, maxLaenge);
+						}
+				}
+
+				// Treffer mitzaehlen
+				saetzeGefunden++;
+			}
+
+			// Durchlaufenen Satz mitzaehlen
+			saetzeDurchlaufen++;
+
+			// ggf. Meldung ausgeben
+			if (ausfuehrlicheFortschrittsMeldungen){
+				double prozentFertig = Math
+						.ceil(((double) saetzeDurchlaufen / (double) satzListe
+								.size()) * 100);
+				if ((satzListe.size() / 20) != 0
+						&& saetzeDurchlaufen % (satzListe.size() / 20) == 0) {
+					Logger.getLogger(
+							BaumBauer.class.getCanonicalName())
+							.info("Ermittle Saetze, die Wort '" + wortTyp
+									+ "' beinhalten: " + saetzeDurchlaufen + "/"
+									+ satzListe.size() + " (" + saetzeGefunden
+									+ ") " + prozentFertig + "%");
+				}
+			}
+		}
+		
+		// Zeilenumbruch in Anzeige ausgeben
+		if (ausfuehrlicheFortschrittsMeldungen){
+			System.out.println();
+		}
+		
+		// Anzahl der gefundenen Wortvorkommen zurueckgeben
+		return vorkommenGefunden;
+	}
 
 }
